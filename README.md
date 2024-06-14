@@ -70,7 +70,7 @@ See the [example](examples/craft/src/main.rs)
 ### Hash
 Calculate the Kerberos keys (password hashes) from the user password.
 
-See the [example](examples/craft/hash/main.rs)
+See the [example](examples/hash/src/main.rs)
 
 ### Kerberoast
 To format encrypted part of tickets in order to be cracked by hashcat or john.
@@ -87,7 +87,7 @@ is not specified, then a
 [NT-ENTERPRISE principal](https://swarm.ptsecurity.com/kerberoasting-without-spns/)
 is used. This can also be useful to bruteforce users with services.
 
-See the [example](examples/craft/kerberoast/main.rs)
+See the [example](examples/kerberoast/src/main.rs)
 
 ## TODO
  - Clean up the code, there's a ton of verbose returns that don't need to be there and some double dereferences
