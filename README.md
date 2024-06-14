@@ -1,6 +1,6 @@
 <!-- cargo-sync-readme start -->
 
-# Cerbero
+# Cerbero-lib
 
 [![Crates.io](https://img.shields.io/crates/v/cerbero-lib)](https://crates.io/crates/cerbero-lib)
 [![Language Rust](https://img.shields.io/badge/Language-Rust-blue)](https://www.rust-lang.org/)
