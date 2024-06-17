@@ -10,6 +10,7 @@
 
 
 [![Crates.io](https://img.shields.io/crates/v/cerbero-lib)](https://crates.io/crates/cerbero-lib)
+[![docs.rs](https://img.shields.io/docsrs/cerbero-lib)](https://docs.rs/cerbero-lib/latest/cerbero_lib)
 [![Language Rust](https://img.shields.io/badge/Language-Rust-blue)](https://www.rust-lang.org/)
 
 Library to perform several tasks related with the Kerberos protocol in an Active Directory pentest.
