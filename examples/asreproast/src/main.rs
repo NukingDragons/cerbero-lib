@@ -13,7 +13,7 @@ fn main()
 	{
 		Ok(channel) => match asreproast(
 		                                "DOMAIN.COM",
-		                                "Username".to_string(),
+		                                "Username",
 		                                CrackFormat::Hashcat,
 		                                channel.as_ref(),
 		                                Some(EncryptionType::RC4),

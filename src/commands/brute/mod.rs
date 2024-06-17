@@ -16,61 +16,58 @@ use kerberos_crypto::Key;
 /// # Examples
 ///
 /// ```
-/// use cerbero_lib::{brute, BruteResult, KdcComm, Kdcs, TransportProtocol};
-/// use std::net::{IpAddr, Ipv4Addr};
+/// let mut kdcs = Kdcs::new();
+/// let kdc_ip = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
+/// kdcs.insert("DOMAIN.COM".to_string(), kdc_ip);
 ///
-/// fn main()
+/// let mut kdccomm = KdcComm::new(kdcs, TransportProtocol::TCP);
+///
+/// let passwords = ["password1", "password2"];
+///
+/// match kdccomm.create_channel("DOMAIN.COM")
 /// {
-///    let mut kdcs = Kdcs::new();
-///    let kdc_ip = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
-///    kdcs.insert("DOMAIN.COM".to_string(), kdc_ip);
-///
-///    let mut kdccomm = KdcComm::new(kdcs, TransportProtocol::TCP);
-///
-///    let passwords = ["password1", "password2"];
-///
-///    match kdccomm.create_channel("DOMAIN.COM")
-///    {
-///       Ok(channel) =>
-///       {
-///          for password in passwords.iter()
-///          {
-///             match brute("DOMAIN.COM", "Username".to_string(), password.to_string(), channel.as_ref())
+///     Ok(channel) =>
+///     {
+///         for password in passwords.iter()
+///         {
+///             match brute("DOMAIN.COM", "Username", password, channel.as_ref())
 ///             {
-///                Ok(result) => match result
-///                {
-///                   BruteResult::ValidPair(username, password) =>
-///                   {
-///                      println!("Valid User \"{}\" with Password \"{}\"", username, password)
-///                   },
-///                   BruteResult::InvalidUser(username) =>
-///                   {
-///                      println!("Invalid User \"{}\"", username)
-///                   },
-///                   BruteResult::ValidUser(username) =>
-///                   {
-///                      println!("Valid User \"{}\"", username)
-///                   },
-///                   BruteResult::ExpiredPassword(username, password) =>
-///                   {
-///                      println!("Valid User \"{}\" with Expired Password \"{}\"", username, password)
-///                   },
-///                   BruteResult::BlockedUser(username) =>
-///                   {
-///                      println!("Blocked User \"{}\"", username)
-///                   },
-///                },
-///                Err(e) => panic!("Failed to brute force the KDC: {}", e),
+///                 Ok(result) => match result
+///                 {
+///                     BruteResult::ValidPair(username, password) =>
+///                     {
+///                         println!("Valid User \"{}\" with Password \"{}\"", username, password)
+///                     },
+///                     BruteResult::InvalidUser(username) =>
+///                     {
+///                         println!("Invalid User \"{}\"", username)
+///                     },
+///                     BruteResult::ValidUser(username) =>
+///                     {
+///                         println!("Valid User \"{}\"", username)
+///                     },
+///                     BruteResult::ExpiredPassword(username, password) =>
+///                     {
+///                         println!("Valid User \"{}\" with Expired Password \"{}\"", username, password)
+///                     },
+///                     BruteResult::BlockedUser(username) =>
+///                     {
+///                         println!("Blocked User \"{}\"", username)
+///                     },
+///                 },
+///                 Err(e) => panic!("Failed to brute force the KDC: {}", e),
 ///             }
-///          }
-///       },
-///       Err(e) => panic!("Failed to create a channel to the KDC: {}", e),
-///    }
+///         }
+///     },
+///     Err(e) => panic!("Failed to create a channel to the KDC: {}", e),
 /// }
 /// ```
 
-pub fn brute(realm: &str, username: String, password: String, channel: &dyn KrbChannel) -> Result<BruteResult>
+pub fn brute(realm: &str, username: &str, password: &str, channel: &dyn KrbChannel) -> Result<BruteResult>
 {
+	let username = username.to_string();
+	let password = password.to_string();
+
 	let user = KrbUser::new(username.clone(), realm.to_string());
 	let user_key = Key::Secret(password.clone());
 

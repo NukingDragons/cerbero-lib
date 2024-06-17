@@ -82,7 +82,7 @@ The `craft` function allows for the crafting of golden and silver tickets.
 _(View the `craft` example [here](examples/craft/src/main.rs))_
 
 ### Hash
-The `hash` function calculate the Kerberos keys (password hashes) from the user password.
+The `hash` module contains functions that calculate the Kerberos keys (password hashes) from the user password.
 
 _(View the `hash` example [here](examples/hash/src/main.rs))_
 
@@ -109,9 +109,9 @@ _(View the `kerberoast` example [here](examples/kerberoast/src/main.rs))_
 
 > [!note]
 > - Clean up the code, clippy thinks there are too many args to some functions + large Result types
-> - Make the arguments to the commands more concise
 > - Remove some of the allows inside of lib.rs
 > - Improve documentation significantly, including README and the examples directory
+> - Add SID lookup module and improve the functions that require them
 
 ## Credits
 This work is based on great work of other people:

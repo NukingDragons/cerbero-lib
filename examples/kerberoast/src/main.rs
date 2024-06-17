@@ -1,5 +1,5 @@
 use cerbero_lib::{
-	kerberoast, CrackFormat, CredFormat, EncryptionType, FileVault, KdcComm, Kdcs, Key, KrbUser, TransportProtocol,
+	kerberoast, CrackFormat, CredFormat, EncryptionType, FileVault, KdcComm, Kdcs, Key, TransportProtocol,
 };
 use std::net::{IpAddr, Ipv4Addr};
 
@@ -9,7 +9,6 @@ fn main()
 	let kdc_ip = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
 	kdcs.insert("DOMAIN.COM".to_string(), kdc_ip);
 
-	let user = KrbUser::new("Username".to_string(), "DOMAIN.COM".to_string());
 	let key = Key::Secret("Password".to_string());
 	let kdccomm = KdcComm::new(kdcs, TransportProtocol::TCP);
 	let mut vault = FileVault::new("tickets.ccache".to_string());
@@ -22,7 +21,8 @@ fn main()
 	];
 
 	match kerberoast(
-	                 user,
+	                 "DOMAIN.COM",
+	                 "Username",
 	                 services,
 	                 &mut vault,
 	                 None,

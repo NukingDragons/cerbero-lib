@@ -19,12 +19,11 @@ pub fn hash_rc4(password: &str) -> Result<String>
 /// # Examples
 ///
 /// ```
-/// let user: KrbUser = KrbUser::new("Username".to_string(), "DOMAIN.COM".to_string());
-///
-/// let hash = hash_aes128(user, "Password").expect("Failed to hash AES128 password");
+/// let hash = hash_aes128("DOMAIN.COM", "Username", "Password").expect("Failed to hash AES128 password");
 /// ```
-pub fn hash_aes128(user: KrbUser, password: &str) -> Result<String>
+pub fn hash_aes128(realm: &str, username: &str, password: &str) -> Result<String>
 {
+	let user = KrbUser::new(username.to_string(), realm.to_string());
 	let aes_salt = aes_hmac_sha1::generate_salt(&user.realm, &user.name);
 
 	let aes_128_key = aes_hmac_sha1::generate_key_from_string(password, &aes_salt, &AesSizes::Aes128);
@@ -37,12 +36,11 @@ pub fn hash_aes128(user: KrbUser, password: &str) -> Result<String>
 /// # Examples
 ///
 /// ```
-/// let user: KrbUser = KrbUser::new("Username".to_string(), "DOMAIN.COM".to_string());
-///
-/// let hash = hash_aes256(user, "Password").expect("Failed to hash AES256 password");
+/// let hash = hash_aes256("DOMAIN.COM", "Username", "Password").expect("Failed to hash AES256 password");
 /// ```
-pub fn hash_aes256(user: KrbUser, password: &str) -> Result<String>
+pub fn hash_aes256(realm: &str, username: &str, password: &str) -> Result<String>
 {
+	let user = KrbUser::new(username.to_string(), realm.to_string());
 	let aes_salt = aes_hmac_sha1::generate_salt(&user.realm, &user.name);
 
 	let aes_256_key = aes_hmac_sha1::generate_key_from_string(password, &aes_salt, &AesSizes::Aes256);

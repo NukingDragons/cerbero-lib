@@ -17,7 +17,7 @@ fn main()
 		{
 			for password in passwords.iter()
 			{
-				match brute("DOMAIN.COM", "Username".to_string(), password.to_string(), channel.as_ref())
+				match brute("DOMAIN.COM", "Username", password, channel.as_ref())
 				{
 					Ok(result) => match result
 					{
