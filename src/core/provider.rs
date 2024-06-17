@@ -1,10 +1,9 @@
 use super::Vault;
-use crate::communication::{KdcComm, KrbChannel};
-use crate::core::request_s4u2self_tgs;
-use crate::core::request_tgt;
-use crate::core::KrbUser;
-use crate::core::TicketCred;
-use crate::error::Result;
+use crate::{
+	communication::{KdcComm, KrbChannel},
+	core::{request_s4u2self_tgs, request_tgt, KrbUser, TicketCred},
+	error::Result,
+};
 use kerberos_crypto::Key;
 
 /// Function to get a TGT from the credentials file

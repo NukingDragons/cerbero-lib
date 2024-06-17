@@ -1,7 +1,8 @@
 use super::Vault;
-use crate::core::CredFormat;
-use crate::core::{KrbUser, TicketCred, TicketCreds};
-use crate::error::Result;
+use crate::{
+	core::{CredFormat, KrbUser, TicketCred, TicketCreds},
+	error::Result,
+};
 
 /// Reference for implementing the `Vault` trait
 pub struct EmptyVault
@@ -9,11 +10,19 @@ pub struct EmptyVault
 	ticket_creds: TicketCreds,
 }
 
+impl Default for EmptyVault
+{
+	fn default() -> Self
+	{
+		Self::new()
+	}
+}
+
 impl EmptyVault
 {
 	pub fn new() -> Self
 	{
-		return Self { ticket_creds: TicketCreds::empty() };
+		Self { ticket_creds: TicketCreds::empty() }
 	}
 }
 
@@ -21,7 +30,7 @@ impl Vault for EmptyVault
 {
 	fn id(&self) -> &str
 	{
-		return "Nowhere";
+		"Nowhere"
 	}
 
 	fn support_cred_format(&self) -> Result<Option<CredFormat>>

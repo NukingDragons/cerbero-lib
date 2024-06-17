@@ -1,11 +1,12 @@
 use super::senders::send_recv_tgs;
-use crate::communication::{KdcComm, KrbChannel};
-use crate::core::forge;
-use crate::core::forge::KrbUser;
-use crate::core::forge::{build_tgs_req, extract_ticket_from_tgs_rep, S4u};
-use crate::core::Cipher;
-use crate::core::TicketCred;
-use crate::error::Result;
+use crate::{
+	communication::{KdcComm, KrbChannel},
+	core::{
+		forge::{self, build_tgs_req, extract_ticket_from_tgs_rep, KrbUser, S4u},
+		Cipher, TicketCred,
+	},
+	error::Result,
+};
 use kerberos_asn1::{PrincipalName, TgsRep, Ticket};
 
 /// Request a TGS for the desired service by handling the possible referral
@@ -109,7 +110,7 @@ pub fn request_tgs(user: KrbUser,
 	let cipher = tgt.cred_info.key.into();
 	let tgs_rep = request_tgs_rep(user, server_realm, tgt.ticket, &cipher, s4u2options, etypes, channel)?;
 
-	return extract_ticket_from_tgs_rep(tgs_rep, &cipher);
+	extract_ticket_from_tgs_rep(tgs_rep, &cipher)
 }
 
 pub fn request_tgs_rep(user: KrbUser,
@@ -121,7 +122,7 @@ pub fn request_tgs_rep(user: KrbUser,
                        channel: &dyn KrbChannel)
                        -> Result<TgsRep>
 {
-	let tgs_req = build_tgs_req(user, server_realm, tgt, &cipher, s4u2options, etypes);
+	let tgs_req = build_tgs_req(user, server_realm, tgt, cipher, s4u2options, etypes);
 
-	return send_recv_tgs(channel, &tgs_req);
+	send_recv_tgs(channel, &tgs_req)
 }

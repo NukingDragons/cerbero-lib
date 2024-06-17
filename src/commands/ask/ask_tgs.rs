@@ -1,12 +1,12 @@
-use crate::communication::KdcComm;
-use crate::core::forge::new_nt_srv_inst;
-use crate::core::CredFormat;
-use crate::core::KrbUser;
-use crate::core::Vault;
-use crate::core::{
-	get_impersonation_ticket, get_user_tgt, request_regular_tgs, request_s4u2self_tgs, request_tgs, S4u,
+use crate::{
+	communication::KdcComm,
+	core::{
+		forge::new_nt_srv_inst,
+		CredFormat, KrbUser, Vault,
+		{get_impersonation_ticket, get_user_tgt, request_regular_tgs, request_s4u2self_tgs, request_tgs, S4u},
+	},
+	error::Result,
 };
-use crate::error::Result;
 use kerberos_crypto::Key;
 
 /// Main function to request a new TGS for a user for the selected service

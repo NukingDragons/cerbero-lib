@@ -1,14 +1,13 @@
-use crate::core::{new_nt_principal, new_principal_or_srv_inst, new_signed_pac, Cipher, TicketCred};
-use crate::KrbUser;
+use crate::{
+	core::{new_nt_principal, new_principal_or_srv_inst, new_signed_pac, Cipher, TicketCred},
+	KrbUser,
+};
 use chrono::{Duration, Utc};
 use kerberos_asn1::{
 	Asn1Object, AuthorizationDataEntry, EncTicketPart, EncryptedData, EncryptionKey, KerberosTime, KrbCredInfo,
 	PrincipalName, Realm, Ticket, TransitedEncoding,
 };
-use kerberos_constants::ad_types;
-use kerberos_constants::key_usages;
-use kerberos_constants::principal_names;
-use kerberos_constants::ticket_flags;
+use kerberos_constants::{ad_types, key_usages, principal_names, ticket_flags};
 use kerberos_crypto::Key;
 use ms_dtyp::FILETIME;
 use ms_pac::PISID;
@@ -77,7 +76,7 @@ pub fn craft_ticket_info(user: KrbUser,
 	                          renew_till,
 	);
 
-	return TicketCred::new(ticket, krb_cred_info);
+	TicketCred::new(ticket, krb_cred_info)
 }
 
 /// Creates a Ticket which contains a custom PAC structure
@@ -105,7 +104,7 @@ fn craft_ticket(username: &str,
 	                                            crealm,
 	                                            domain_sid,
 	                                            groups,
-	                                            &cipher,
+	                                            cipher,
 	                                            tkt_flags,
 	                                            session_key,
 	                                            authtime,
@@ -118,12 +117,10 @@ fn craft_ticket(username: &str,
 
 	let encrypted_enc_ticket_part = cipher.encrypt(key_usages::KEY_USAGE_AS_REP_TICKET, &enc_ticket_part_raw);
 
-	let ticket = Ticket { tkt_vno: 5,
-	                      realm: srealm,
-	                      sname: sname,
-	                      enc_part: EncryptedData::new(cipher.etype(), Some(1), encrypted_enc_ticket_part) };
-
-	return ticket;
+	Ticket { tkt_vno: 5,
+	         realm: srealm,
+	         sname,
+	         enc_part: EncryptedData::new(cipher.etype(), Some(1), encrypted_enc_ticket_part) }
 }
 
 /// Creates an EncTicketPart which contains a custom PAC structure
@@ -149,7 +146,7 @@ fn craft_enc_ticket_part(username: &str,
 	                                domain_sid,
 	                                groups,
 	                                FILETIME::from_unix_timestamp(authtime.timestamp() as u64),
-	                                &cipher,
+	                                cipher,
 	);
 
 	let raw_signed_pac = signed_pac.build();
@@ -158,25 +155,23 @@ fn craft_enc_ticket_part(username: &str,
 
 	let ad_relevant = AuthorizationDataEntry { ad_type: ad_types::AD_IF_RELEVANT, ad_data: vec![ad_win].build() };
 
-	let enc_ticket_part = EncTicketPart { flags: tkt_flags.into(),
-	                                      key: session_key,
-	                                      crealm: crealm,
-	                                      cname: cname,
-	                                      transited: TransitedEncoding::default(),
-	                                      authtime: authtime,
-	                                      starttime: Some(starttime),
-	                                      endtime: endtime,
-	                                      renew_till: Some(renew_till),
-	                                      caddr: None,
-	                                      authorization_data: Some(vec![ad_relevant]) };
-
-	return enc_ticket_part;
+	EncTicketPart { flags: tkt_flags.into(),
+	                key: session_key,
+	                crealm,
+	                cname,
+	                transited: TransitedEncoding::default(),
+	                authtime,
+	                starttime: Some(starttime),
+	                endtime,
+	                renew_till: Some(renew_till),
+	                caddr: None,
+	                authorization_data: Some(vec![ad_relevant]) }
 }
 
 fn random_key(etype: i32) -> EncryptionKey
 {
-	return EncryptionKey { keytype: etype,
-	                       keyvalue: Key::random(etype).expect(&format!("Unsupported etype {}", etype))
-	                                                   .as_bytes()
-	                                                   .to_vec() };
+	EncryptionKey { keytype: etype,
+	                keyvalue: Key::random(etype).unwrap_or_else(|_| panic!("Unsupported etype {}", etype))
+	                                            .as_bytes()
+	                                            .to_vec() }
 }

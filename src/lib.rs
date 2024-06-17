@@ -11,7 +11,6 @@
 //! The associated github can be found at <https://github.com/NukingDragons/cerbero-lib>
 
 // TODO: Fix the issues causing these warnings instead of this lazy fix
-#![allow(suspicious_double_ref_op)]
 #![allow(deprecated)]
 #![allow(clippy::too_many_arguments)]
 

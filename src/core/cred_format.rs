@@ -30,7 +30,7 @@ impl CredFormat
 			return Some(Self::Ccache);
 		}
 
-		return None;
+		None
 	}
 }
 

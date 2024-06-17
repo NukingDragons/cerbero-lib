@@ -1,9 +1,9 @@
 use super::Vault;
-use crate::core::CredFormat;
-use crate::core::{TicketCred, TicketCreds};
-use crate::error::Error;
-use crate::KrbUser;
-use crate::Result;
+use crate::{
+	core::{CredFormat, TicketCred, TicketCreds},
+	error::Error,
+	KrbUser, Result,
+};
 use kerberos_asn1::{Asn1Object, KrbCred};
 use kerberos_ccache::CCache;
 use std::fs;
@@ -192,7 +192,7 @@ pub fn save_file_krb_cred(creds_file: &str, krb_cred: KrbCred, cred_format: Cred
 		CredFormat::Ccache =>
 		{
 			let ccache: CCache =
-				krb_cred.try_into().map_err(|_| Error::DataError(format!("Error converting KrbCred to CCache")))?;
+				krb_cred.try_into().map_err(|_| Error::DataError("Error converting KrbCred to CCache".to_string()))?;
 			ccache.build()
 		},
 	};

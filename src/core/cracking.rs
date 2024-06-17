@@ -31,7 +31,7 @@ pub fn as_rep_to_crack_string(username: &str, as_rep: &AsRep, crack_format: Crac
 pub fn tgs_to_crack_string(username: &str, service: &str, ticket: &Ticket, crack_format: CrackFormat) -> String
 {
 	let user = username;
-	let serv = service.replace(":", "~");
+	let serv = service.replace(':', "~");
 	let etype = ticket.enc_part.etype;
 	let realm = &ticket.realm;
 	let (salt, ciphertext) = divide_salt_and_ciphertext(etype, ticket.enc_part.cipher.to_vec());
@@ -69,7 +69,7 @@ fn divide_salt_and_ciphertext(etype: i32, cipher: Vec<u8>) -> (Vec<u8>, Vec<u8>)
 		ciphertext = salt.drain(16..).collect();
 	}
 
-	return (salt, ciphertext);
+	(salt, ciphertext)
 }
 
 fn arr_u8_to_hexa_string(array: &[u8]) -> String
@@ -79,5 +79,5 @@ fn arr_u8_to_hexa_string(array: &[u8]) -> String
 	{
 		hexa_string.push_str(&format!("{:02x}", item));
 	}
-	return hexa_string;
+	hexa_string
 }

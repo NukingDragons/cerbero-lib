@@ -74,7 +74,7 @@ pub fn brute(realm: &str, username: String, password: String, channel: &dyn KrbC
 	let user = KrbUser::new(username.clone(), realm.to_string());
 	let user_key = Key::Secret(password.clone());
 
-	match request_tgt(user, &user_key, None, &*channel)
+	match request_tgt(user, &user_key, None, channel)
 	{
 		Ok(_) => Ok(BruteResult::ValidPair(username.clone(), password.clone())),
 		Err(e) => match e

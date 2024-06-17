@@ -1,10 +1,13 @@
-use super::kdc_req::KdcReqBuilder;
-use super::pa_data::{
-	new_pa_data_ap_req, new_pa_data_encrypted_timestamp, new_pa_data_pa_for_user, new_pa_data_pac_options,
+use super::{
+	principal_name::{new_nt_enterprise, new_nt_srv_inst},
+	{
+		kdc_req::KdcReqBuilder,
+		pa_data::{
+			new_pa_data_ap_req, new_pa_data_encrypted_timestamp, new_pa_data_pa_for_user, new_pa_data_pac_options,
+		},
+	},
 };
-use super::principal_name::{new_nt_enterprise, new_nt_srv_inst};
-use crate::core::forge::KrbUser;
-use crate::core::Cipher;
+use crate::core::{forge::KrbUser, Cipher};
 use kerberos_asn1::{AsReq, PrincipalName, TgsReq, Ticket};
 use kerberos_constants::{kdc_options, pa_pac_options};
 
@@ -25,7 +28,7 @@ pub fn build_as_req(user: KrbUser, cipher: Option<&Cipher>, etypes: Option<Vec<i
 		as_req_builder = as_req_builder.etypes(etypes);
 	}
 
-	return as_req_builder.build_as_req();
+	as_req_builder.build_as_req()
 }
 
 pub enum S4u
@@ -81,5 +84,5 @@ pub fn build_tgs_req(user: KrbUser,
 		},
 	}
 
-	return tgs_req_builder.push_padata(new_pa_data_ap_req(user, tgt, cipher)).build_tgs_req();
+	tgs_req_builder.push_padata(new_pa_data_ap_req(user, tgt, cipher)).build_tgs_req()
 }

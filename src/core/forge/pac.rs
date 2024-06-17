@@ -1,7 +1,6 @@
 use crate::core::Cipher;
 use kerberos_constants::key_usages;
-use ms_dtyp::FILETIME;
-use ms_dtyp::RID_DOMAIN_USERS;
+use ms_dtyp::{FILETIME, RID_DOMAIN_USERS};
 use ms_pac::{
 	GROUP_MEMBERSHIP, KERB_VALIDATION_INFO, NOT_EXPIRE_TIME, NOT_SET_TIME, PACTYPE, PAC_CLIENT_INFO, PAC_INFO_BUFFER,
 	PAC_SIGNATURE_DATA, PISID,
@@ -32,7 +31,7 @@ pub fn new_signed_pac(username: &str,
 	let privsrv_checksum = pactype.privsrv_checksum_mut().unwrap();
 	privsrv_checksum.Signature = privsrv_sign;
 
-	return pactype;
+	pactype
 }
 
 fn new_pactype(username: &str,
@@ -44,7 +43,7 @@ fn new_pactype(username: &str,
                logon_time: FILETIME)
                -> PACTYPE
 {
-	return PACTYPE::from(vec![
+	PACTYPE::from(vec![
 		PAC_INFO_BUFFER::LOGON_INFO(new_kerb_validation_info(
 			username,
 			user_rid,
@@ -56,12 +55,12 @@ fn new_pactype(username: &str,
 		PAC_INFO_BUFFER::CLIENT_INFO(PAC_CLIENT_INFO::new(logon_time, username)),
 		PAC_INFO_BUFFER::SERVER_CHECKSUM(new_pac_signature(checksum_type)),
 		PAC_INFO_BUFFER::PRIVSRV_CHECKSUM(new_pac_signature(checksum_type)),
-	]);
+	])
 }
 
 fn new_pac_signature(etype: i32) -> PAC_SIGNATURE_DATA
 {
-	return PAC_SIGNATURE_DATA::new_empty(etype);
+	PAC_SIGNATURE_DATA::new_empty(etype)
 }
 
 fn new_kerb_validation_info(username: &str,
@@ -72,19 +71,21 @@ fn new_kerb_validation_info(username: &str,
                             logon_time: FILETIME)
                             -> KERB_VALIDATION_INFO
 {
-	let mut kvi = KERB_VALIDATION_INFO::default();
-
-	kvi.LogonTime = logon_time.clone();
-	kvi.LogoffTime = NOT_EXPIRE_TIME.into();
-	kvi.KickOffTime = NOT_EXPIRE_TIME.into();
-	kvi.PasswordLastSet = logon_time;
-	kvi.PasswordCanChange = NOT_SET_TIME.into();
-	kvi.PasswordMustChange = NOT_EXPIRE_TIME.into();
-	kvi.EfectiveName = username.into();
-	kvi.LogonCount = 500;
-	kvi.BadPasswordCount = 0;
-	kvi.UserId = user_rid;
-	kvi.PrimaryGroupId = RID_DOMAIN_USERS;
+	let mut kvi = KERB_VALIDATION_INFO { LogonTime: logon_time.clone(),
+	                                     LogoffTime: NOT_EXPIRE_TIME.into(),
+	                                     KickOffTime: NOT_EXPIRE_TIME.into(),
+	                                     PasswordLastSet: logon_time,
+	                                     PasswordCanChange: NOT_SET_TIME.into(),
+	                                     PasswordMustChange: NOT_EXPIRE_TIME.into(),
+	                                     EfectiveName: username.into(),
+	                                     LogonCount: 500,
+	                                     BadPasswordCount: 0,
+	                                     UserId: user_rid,
+	                                     PrimaryGroupId: RID_DOMAIN_USERS,
+	                                     LogonDomainName: domain.to_uppercase().as_str().into(),
+	                                     LogonDomainId: domain_sid,
+	                                     UserAccountControl: USER_NORMAL_ACCOUNT | USER_DONT_EXPIRE_PASSWORD,
+	                                     ..Default::default() };
 
 	for group_id in groups.iter()
 	{
@@ -92,9 +93,5 @@ fn new_kerb_validation_info(username: &str,
 		   .push(GROUP_MEMBERSHIP::new(*group_id, SE_GROUP_MANDATORY | SE_GROUP_ENABLED | SE_GROUP_ENABLED_BY_DEFAULT));
 	}
 
-	kvi.LogonDomainName = domain.to_uppercase().as_str().into();
-	kvi.LogonDomainId = domain_sid;
-	kvi.UserAccountControl = USER_NORMAL_ACCOUNT | USER_DONT_EXPIRE_PASSWORD;
-
-	return kvi;
+	kvi
 }

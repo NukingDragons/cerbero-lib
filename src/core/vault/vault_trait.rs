@@ -1,6 +1,7 @@
-use crate::core::{CredFormat, TicketCred, TicketCreds};
-use crate::KrbUser;
-use crate::Result;
+use crate::{
+	core::{CredFormat, TicketCred, TicketCreds},
+	KrbUser, Result,
+};
 
 /// Trait that implements the storage of tickets
 pub trait Vault

@@ -1,5 +1,4 @@
-use crate::communication::KrbChannel;
-use crate::error::Result;
+use crate::{communication::KrbChannel, error::Result};
 use kerberos_asn1::{AsRep, AsReq, Asn1Object, KrbError, TgsRep, TgsReq};
 use std::io;
 
@@ -8,7 +7,6 @@ pub enum Rep
 	AsRep(AsRep),
 	TgsRep(TgsRep),
 	KrbError(KrbError),
-	#[allow(dead_code)]
 	Raw(Vec<u8>),
 }
 

@@ -1,8 +1,6 @@
 use kerberos_asn1::KrbError;
 use kerberos_constants::error_codes;
-use std::fmt;
-use std::io;
-use std::result;
+use std::{fmt, io, result};
 
 pub type Result<T> = result::Result<T, Error>;
 
@@ -28,7 +26,7 @@ impl Error
 		{
 			return io_err.kind() == io::ErrorKind::NotFound;
 		}
-		return false;
+		false
 	}
 
 	pub fn is_data_error(&self) -> bool
@@ -37,7 +35,7 @@ impl Error
 		{
 			return true;
 		}
-		return false;
+		false
 	}
 }
 
@@ -51,7 +49,7 @@ impl fmt::Display for Error
 			Error::DataError(s) => write!(f, "{}", s),
 			Error::KrbError(krb_error) =>
 			{
-				write!(f, "{}", create_krb_error_msg(&krb_error))
+				write!(f, "{}", create_krb_error_msg(krb_error))
 			},
 			Error::IOError(desc, io_error) =>
 			{
@@ -65,7 +63,7 @@ impl From<String> for Error
 {
 	fn from(error: String) -> Self
 	{
-		return Self::String(error);
+		Self::String(error)
 	}
 }
 
@@ -73,7 +71,7 @@ impl From<&str> for Error
 {
 	fn from(error: &str) -> Self
 	{
-		return Self::String(error.to_string());
+		Self::String(error.to_string())
 	}
 }
 
@@ -81,7 +79,7 @@ impl From<KrbError> for Error
 {
 	fn from(error: KrbError) -> Self
 	{
-		return Self::KrbError(error);
+		Self::KrbError(error)
 	}
 }
 
@@ -89,7 +87,7 @@ impl From<(&str, io::Error)> for Error
 {
 	fn from(error: (&str, io::Error)) -> Self
 	{
-		return Self::IOError(error.0.into(), error.1);
+		Self::IOError(error.0.into(), error.1)
 	}
 }
 
@@ -97,12 +95,12 @@ impl From<(String, io::Error)> for Error
 {
 	fn from(error: (String, io::Error)) -> Self
 	{
-		return Self::IOError(error.0, error.1);
+		Self::IOError(error.0, error.1)
 	}
 }
 
 fn create_krb_error_msg(krb_error: &KrbError) -> String
 {
 	let error_string = error_codes::error_code_to_string(krb_error.error_code);
-	return format!("Error {}: {}", krb_error.error_code, error_string);
+	format!("Error {}: {}", krb_error.error_code, error_string)
 }

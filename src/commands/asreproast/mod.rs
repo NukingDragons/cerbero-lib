@@ -53,7 +53,7 @@ pub fn asreproast(realm: &str,
 {
 	let user = KrbUser::new(username.clone(), realm.to_string());
 
-	let as_rep = request_as_rep(user, None, etype.map(|e| vec![e.as_constant()]), &*channel)?;
+	let as_rep = request_as_rep(user, None, etype.map(|e| vec![e.as_constant()]), channel)?;
 
 	Ok(as_rep_to_crack_string(&username, &as_rep, crack_format))
 }

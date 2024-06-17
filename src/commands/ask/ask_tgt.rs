@@ -1,9 +1,8 @@
-use crate::communication::KdcComm;
-use crate::core::request_tgt;
-use crate::core::CredFormat;
-use crate::core::KrbUser;
-use crate::core::Vault;
-use crate::error::Result;
+use crate::{
+	communication::KdcComm,
+	core::{request_tgt, CredFormat, KrbUser, Vault},
+	error::Result,
+};
 use kerberos_crypto::Key;
 
 /// Main function to ask a TGT

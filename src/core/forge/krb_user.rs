@@ -37,7 +37,7 @@ impl TryFrom<&str> for KrbUser
 	{
 		let parts: Vec<&str> = value.split(|c| ['/', '\\'].contains(&c)).collect();
 
-		if parts.len() != 2 || parts[0].len() == 0 || parts[1].len() == 0
+		if parts.len() != 2 || parts[0].is_empty() || parts[1].is_empty()
 		{
 			return Err(format!("Invalid user '{}', it must be <domain>/<username>", value));
 		}
@@ -52,7 +52,7 @@ impl TryFrom<&String> for KrbUser
 
 	fn try_from(value: &String) -> Result<Self, Self::Error>
 	{
-		return Self::try_from(value.as_str());
+		Self::try_from(value.as_str())
 	}
 }
 
@@ -62,6 +62,6 @@ impl TryFrom<String> for KrbUser
 
 	fn try_from(value: String) -> Result<Self, Self::Error>
 	{
-		return Self::try_from(&value);
+		Self::try_from(&value)
 	}
 }

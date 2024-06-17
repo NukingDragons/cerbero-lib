@@ -22,20 +22,20 @@ impl KdcReqBuilder
 {
 	pub fn new(realm: String) -> Self
 	{
-		return Self { realm: realm.clone(),
-		              sname: Some(PrincipalName { name_type: principal_names::NT_PRINCIPAL,
-		                                          name_string: vec!["krbtgt".into(), realm] }),
-		              etypes: supported_etypes(),
-		              kdc_options: kdc_options::FORWARDABLE
-		                           | kdc_options::RENEWABLE
-		                           | kdc_options::CANONICALIZE
-		                           | kdc_options::RENEWABLE_OK,
-		              cname: None,
-		              padatas: Vec::new(),
-		              nonce: rand::thread_rng().gen(),
-		              till: Utc::now().checked_add_signed(Duration::weeks(20 * 52)).unwrap().into(),
-		              rtime: Some(Utc::now().checked_add_signed(Duration::weeks(20 * 52)).unwrap().into()),
-		              additional_tickets: Vec::new() };
+		Self { realm: realm.clone(),
+		       sname: Some(PrincipalName { name_type: principal_names::NT_PRINCIPAL,
+		                                   name_string: vec!["krbtgt".into(), realm] }),
+		       etypes: supported_etypes(),
+		       kdc_options: kdc_options::FORWARDABLE
+		                    | kdc_options::RENEWABLE
+		                    | kdc_options::CANONICALIZE
+		                    | kdc_options::RENEWABLE_OK,
+		       cname: None,
+		       padatas: Vec::new(),
+		       nonce: rand::thread_rng().gen(),
+		       till: Utc::now().checked_add_signed(Duration::weeks(20 * 52)).unwrap().into(),
+		       rtime: Some(Utc::now().checked_add_signed(Duration::weeks(20 * 52)).unwrap().into()),
+		       additional_tickets: Vec::new() }
 	}
 
 	pub fn add_kdc_option(mut self, kdc_option: u32) -> Self
@@ -97,17 +97,17 @@ impl KdcReqBuilder
 		req.req_body.nonce = self.nonce;
 		req.req_body.etypes = self.etypes;
 
-		if self.padatas.len() > 0
+		if !self.padatas.is_empty()
 		{
 			req.padata = Some(self.padatas);
 		}
 
-		if self.additional_tickets.len() > 0
+		if !self.additional_tickets.is_empty()
 		{
 			req.req_body.additional_tickets = Some(self.additional_tickets);
 		}
 
-		return req;
+		req
 	}
 
 	pub fn build_as_req(self) -> AsReq

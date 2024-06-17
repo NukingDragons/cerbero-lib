@@ -1,6 +1,8 @@
 use crate::communication::{KrbChannel, TransportProtocol};
-use std::io;
-use std::net::{IpAddr, SocketAddr, UdpSocket};
+use std::{
+	io,
+	net::{IpAddr, SocketAddr, UdpSocket},
+};
 
 /// Send Kerberos messages over UDP
 #[derive(Debug)]
@@ -13,7 +15,7 @@ impl UdpChannel
 {
 	pub fn new(dst_addr: SocketAddr) -> Self
 	{
-		return Self { dst_addr };
+		Self { dst_addr }
 	}
 }
 
@@ -21,17 +23,17 @@ impl KrbChannel for UdpChannel
 {
 	fn send_recv(&self, raw: &[u8]) -> io::Result<Vec<u8>>
 	{
-		return send_recv_udp(&self.dst_addr, raw);
+		send_recv_udp(&self.dst_addr, raw)
 	}
 
 	fn protocol(&self) -> TransportProtocol
 	{
-		return TransportProtocol::UDP;
+		TransportProtocol::UDP
 	}
 
 	fn ip(&self) -> IpAddr
 	{
-		return self.dst_addr.ip();
+		self.dst_addr.ip()
 	}
 }
 
@@ -72,7 +74,7 @@ mod tests
 	#[test]
 	fn test_request_networks_error()
 	{
-		let requester = UdpTransporter::new(SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 88));
-		requester.send_recv(&vec![]).unwrap();
+		let requester = UdpChannel::new(SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 88));
+		requester.send_recv(&[]).unwrap();
 	}
 }

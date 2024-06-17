@@ -19,9 +19,9 @@ pub fn ticket_cred_to_string(tc: &TicketCred, indent_level: usize) -> String
 	let indentation = indent(indent_level);
 	format!(
 	        "{}[Ticket]\n\
-         {}\n\
-         {}[KrbCredInfo]\n\
-         {}",
+             {}\n\
+             {}[KrbCredInfo]\n\
+             {}",
 	        indentation,
 	        ticket_to_string(&tc.ticket, indent_level),
 	        indentation,
@@ -34,24 +34,24 @@ pub fn krb_error_to_string(ke: &KrbError, indent_level: usize) -> String
 	let indentation = indent(indent_level);
 	format!(
 	        "{}pvno: {}\n\
-         {}msg-type: {}\n\
-         {}ctime: {}\n\
-         {}cusec: {}\n\
-         {}stime: {}\n\
-         {}susec: {}\n\
-         {}error-code: {}\n\
-         {}crealm: {}\n\
-         {}cname:{}\n\
-         {}realm: {}\n\
-         {}sname:\n{}\n\
-         {}e-text: {}\n\
-         {}e-data: {}",
+             {}msg-type: {}\n\
+             {}ctime: {}\n\
+             {}cusec: {}\n\
+             {}stime: {}\n\
+             {}susec: {}\n\
+             {}error-code: {}\n\
+             {}crealm: {}\n\
+             {}cname:{}\n\
+             {}realm: {}\n\
+             {}sname:\n{}\n\
+             {}e-text: {}\n\
+             {}e-data: {}",
 	        indentation,
 	        ke.pvno,
 	        indentation,
 	        msg_type_to_string(ke.msg_type),
 	        indentation,
-	        ke.ctime.as_ref().map(|v| kerberos_time_to_string(&v)).unwrap_or(NONE.into()),
+	        ke.ctime.as_ref().map(kerberos_time_to_string).unwrap_or(NONE.into()),
 	        indentation,
 	        ke.cusec.map(|v| format!("{}", v)).unwrap_or(NONE.into()),
 	        indentation,
@@ -65,7 +65,7 @@ pub fn krb_error_to_string(ke: &KrbError, indent_level: usize) -> String
 	        indentation,
 	        ke.cname
 	          .as_ref()
-	          .map(|v| format!("\n{}", principal_name_to_string(&v, indent_level + INDENT_STEP)))
+	          .map(|v| format!("\n{}", principal_name_to_string(v, indent_level + INDENT_STEP)))
 	          .unwrap_or(NONE.into()),
 	        indentation,
 	        ke.realm,
@@ -74,7 +74,7 @@ pub fn krb_error_to_string(ke: &KrbError, indent_level: usize) -> String
 	        indentation,
 	        ke.e_text.as_ref().unwrap_or(&NONE.into()),
 	        indentation,
-	        ke.e_data.as_ref().map(|v| octet_string_to_string(&v)).unwrap_or(NONE.into()),
+	        ke.e_data.as_ref().map(|v| octet_string_to_string(v)).unwrap_or(NONE.into()),
 	)
 }
 
@@ -164,9 +164,9 @@ pub fn as_req_to_string(ar: &AsReq, indent_level: usize) -> String
 	let indentation = indent(indent_level);
 	format!(
 	        "{}pvno: {}\n\
-         {}msg-type: {}\n\
-         {}padata: {}\n\
-         {}req-body:\n{}",
+             {}msg-type: {}\n\
+             {}padata: {}\n\
+             {}req-body:\n{}",
 	        indentation,
 	        ar.pvno,
 	        indentation,
@@ -174,7 +174,7 @@ pub fn as_req_to_string(ar: &AsReq, indent_level: usize) -> String
 	        indentation,
 	        &ar.padata
 	           .as_ref()
-	           .map(|pds| format!("\n{}", padatas_to_string(&pds, indent_level + INDENT_STEP)))
+	           .map(|pds| format!("\n{}", padatas_to_string(pds, indent_level + INDENT_STEP)))
 	           .unwrap_or(NONE.into()),
 	        indentation,
 	        kdc_req_body_to_string(&ar.req_body, indent_level + INDENT_STEP)
@@ -186,9 +186,9 @@ pub fn tgs_req_to_string(tr: &TgsReq, indent_level: usize) -> String
 	let indentation = indent(indent_level);
 	format!(
 	        "{}pvno: {}\n\
-         {}msg-type: {}\n\
-         {}padata: {}\n\
-         {}req-body:\n{}",
+             {}msg-type: {}\n\
+             {}padata: {}\n\
+             {}req-body:\n{}",
 	        indentation,
 	        tr.pvno,
 	        indentation,
@@ -196,7 +196,7 @@ pub fn tgs_req_to_string(tr: &TgsReq, indent_level: usize) -> String
 	        indentation,
 	        &tr.padata
 	           .as_ref()
-	           .map(|pds| format!("\n{}", padatas_to_string(&pds, indent_level + INDENT_STEP)))
+	           .map(|pds| format!("\n{}", padatas_to_string(pds, indent_level + INDENT_STEP)))
 	           .unwrap_or(NONE.into()),
 	        indentation,
 	        kdc_req_body_to_string(&tr.req_body, indent_level + INDENT_STEP)
@@ -208,34 +208,34 @@ pub fn kdc_req_body_to_string(krb: &KdcReqBody, indent_level: usize) -> String
 	let indentation = indent(indent_level);
 	format!(
 	        "{}kdc-options: {}\n\
-         {}cname:{}\n\
-         {}realm: {}\n\
-         {}sname:\n{}\n\
-         {}from: {}\n\
-         {}till: {}\n\
-         {}rtime: {}\n\
-         {}nonce: {}\n\
-         {}etypes:\n{}\n\
-         {}addresses: <Not Implemented>\n\
-         {}enc-authorization-data:{}\n\
-         {}additional-tickets:{}",
+             {}cname:{}\n\
+             {}realm: {}\n\
+             {}sname:\n{}\n\
+             {}from: {}\n\
+             {}till: {}\n\
+             {}rtime: {}\n\
+             {}nonce: {}\n\
+             {}etypes:\n{}\n\
+             {}addresses: <Not Implemented>\n\
+             {}enc-authorization-data:{}\n\
+             {}additional-tickets:{}",
 	        indentation,
 	        kdc_options_to_string(krb.kdc_options.flags),
 	        indentation,
 	        krb.cname
 	           .as_ref()
-	           .map(|v| format!("\n{}", principal_name_to_string(&v, indent_level + INDENT_STEP)))
+	           .map(|v| format!("\n{}", principal_name_to_string(v, indent_level + INDENT_STEP)))
 	           .unwrap_or(format!(" {}", NONE)),
 	        indentation,
 	        krb.realm,
 	        indentation,
-	        krb.sname.as_ref().map(|v| principal_name_to_string(&v, indent_level + INDENT_STEP)).unwrap_or(NONE.into()),
+	        krb.sname.as_ref().map(|v| principal_name_to_string(v, indent_level + INDENT_STEP)).unwrap_or(NONE.into()),
 	        indentation,
-	        krb.from.as_ref().map(|v| kerberos_time_to_string(&v)).unwrap_or(NONE.into()),
+	        krb.from.as_ref().map(kerberos_time_to_string).unwrap_or(NONE.into()),
 	        indentation,
 	        kerberos_time_to_string(&krb.till),
 	        indentation,
-	        krb.rtime.as_ref().map(|v| kerberos_time_to_string(&v)).unwrap_or(NONE.into()),
+	        krb.rtime.as_ref().map(kerberos_time_to_string).unwrap_or(NONE.into()),
 	        indentation,
 	        krb.nonce,
 	        indentation,
@@ -244,12 +244,12 @@ pub fn kdc_req_body_to_string(krb: &KdcReqBody, indent_level: usize) -> String
 	        indentation,
 	        krb.enc_authorization_data
 	           .as_ref()
-	           .map(|v| format!("\n{}", encrypted_data_to_string(&v, indent_level + INDENT_STEP)))
+	           .map(|v| format!("\n{}", encrypted_data_to_string(v, indent_level + INDENT_STEP)))
 	           .unwrap_or(format!(" {}", NONE)),
 	        indentation,
 	        krb.additional_tickets
 	           .as_ref()
-	           .map(|v| format!("\n{}", tickets_to_string(&v, indent_level + INDENT_STEP)))
+	           .map(|v| format!("\n{}", tickets_to_string(v, indent_level + INDENT_STEP)))
 	           .unwrap_or(format!(" {}", NONE))
 	)
 }
@@ -285,7 +285,7 @@ pub fn kdc_options_to_string(ko: u32) -> String
 		}
 	}
 
-	return format!("{:#06x} -> {}", ko, names.join(" "));
+	format!("{:#06x} -> {}", ko, names.join(" "))
 }
 
 pub fn ap_req_to_string(ar: &ApReq, indent_level: usize) -> String
@@ -293,10 +293,10 @@ pub fn ap_req_to_string(ar: &ApReq, indent_level: usize) -> String
 	let indentation = indent(indent_level);
 	format!(
 	        "{}pvno: {}\n\
-         {}msg-type: {}\n\
-         {}ap-options: {}\n\
-         {}ticket:\n{}\n\
-         {}authenticator:\n{}",
+             {}msg-type: {}\n\
+             {}ap-options: {}\n\
+             {}ticket:\n{}\n\
+             {}authenticator:\n{}",
 	        indentation,
 	        ar.pvno,
 	        indentation,
@@ -328,7 +328,7 @@ pub fn ap_options_to_string(ao: u32) -> String
 		}
 	}
 
-	return format!("{:#06x} -> {}", ao, names.join(" "));
+	format!("{:#06x} -> {}", ao, names.join(" "))
 }
 
 pub fn as_rep_to_string(ar: &AsRep, indent_level: usize) -> String
@@ -336,12 +336,12 @@ pub fn as_rep_to_string(ar: &AsRep, indent_level: usize) -> String
 	let indentation = indent(indent_level);
 	format!(
 	        "{}pvno: {}\n\
-         {}msg-type: {}\n\
-         {}padata: {}\n\
-         {}crealm: {}\n\
-         {}cname:\n{}\n\
-         {}ticket:\n{}\n\
-         {}enc-part:\n{}",
+             {}msg-type: {}\n\
+             {}padata: {}\n\
+             {}crealm: {}\n\
+             {}cname:\n{}\n\
+             {}ticket:\n{}\n\
+             {}enc-part:\n{}",
 	        indentation,
 	        ar.pvno,
 	        indentation,
@@ -349,7 +349,7 @@ pub fn as_rep_to_string(ar: &AsRep, indent_level: usize) -> String
 	        indentation,
 	        &ar.padata
 	           .as_ref()
-	           .map(|pds| format!("\n{}", padatas_to_string(&pds, indent_level + INDENT_STEP)))
+	           .map(|pds| format!("\n{}", padatas_to_string(pds, indent_level + INDENT_STEP)))
 	           .unwrap_or(NONE.into()),
 	        indentation,
 	        ar.crealm,
@@ -367,12 +367,12 @@ pub fn tgs_rep_to_string(tr: &TgsRep, indent_level: usize) -> String
 	let indentation = indent(indent_level);
 	format!(
 	        "{}pvno: {}\n\
-         {}msg-type: {}\n\
-         {}padata: {}\n\
-         {}crealm: {}\n\
-         {}cname:\n{}\n\
-         {}ticket:\n{}\n\
-         {}enc-part:\n{}",
+             {}msg-type: {}\n\
+             {}padata: {}\n\
+             {}crealm: {}\n\
+             {}cname:\n{}\n\
+             {}ticket:\n{}\n\
+             {}enc-part:\n{}",
 	        indentation,
 	        tr.pvno,
 	        indentation,
@@ -380,7 +380,7 @@ pub fn tgs_rep_to_string(tr: &TgsRep, indent_level: usize) -> String
 	        indentation,
 	        &tr.padata
 	           .as_ref()
-	           .map(|pds| format!("\n{}", padatas_to_string(&pds, indent_level + INDENT_STEP)))
+	           .map(|pds| format!("\n{}", padatas_to_string(pds, indent_level + INDENT_STEP)))
 	           .unwrap_or(NONE.into()),
 	        indentation,
 	        tr.crealm,
@@ -393,7 +393,7 @@ pub fn tgs_rep_to_string(tr: &TgsRep, indent_level: usize) -> String
 	)
 }
 
-pub fn padatas_to_string(padatas: &Vec<PaData>, indent_level: usize) -> String
+pub fn padatas_to_string(padatas: &[PaData], indent_level: usize) -> String
 {
 	let indentation = indent(indent_level);
 	let mut vs = Vec::new();
@@ -409,23 +409,22 @@ pub fn padatas_to_string(padatas: &Vec<PaData>, indent_level: usize) -> String
 		))
 	}
 
-	return vs.join("\n");
+	vs.join("\n")
 }
 
 pub fn padata_to_string(padata: &PaData, indent_level: usize) -> String
 {
 	let indentation = indent(indent_level);
 
-	return format!(
-	               "{}padata-type: {}\n\
-         {}padata-value:{}",
-	               indentation,
-	               padata_type_to_string(padata.padata_type),
-	               indentation,
-	               padata_value_to_string(&padata, indent_level + INDENT_STEP).map(|v| format!("\n{}", v)).unwrap_or(
-		format!(" {}", octet_string_to_string(&padata.padata_value))
-	)
-	);
+	format!(
+            "{}padata-type: {}\n\
+             {}padata-value:{}",
+             indentation,
+             padata_type_to_string(padata.padata_type),
+             indentation,
+             padata_value_to_string(padata, indent_level + INDENT_STEP).map(|v| format!("\n{}", v)).unwrap_or(
+                format!(" {}", octet_string_to_string(&padata.padata_value)))
+    )
 }
 
 pub fn padata_value_to_string(padata: &PaData, indent_level: usize) -> Option<String>
@@ -477,7 +476,7 @@ pub fn padata_value_to_string(padata: &PaData, indent_level: usize) -> Option<St
 		_ =>
 		{},
 	};
-	return None;
+	None
 }
 
 fn pa_for_user_to_string(pu: &PaForUser, indent_level: usize) -> String
@@ -486,10 +485,9 @@ fn pa_for_user_to_string(pu: &PaForUser, indent_level: usize) -> String
 
 	format!(
 	        "{}userName:\n{}\n\
-         {}userRealm: {}\n\
-         {}cksum:\n{}\n\
-         {}auth-package: {}
-         ",
+             {}userRealm: {}\n\
+             {}cksum:\n{}\n\
+             {}auth-package: {}",
 	        indentation,
 	        principal_name_to_string(&pu.username, indent_level + INDENT_STEP),
 	        indentation,
@@ -507,7 +505,7 @@ fn checksum_to_string(ck: &Checksum, indent_level: usize) -> String
 
 	format!(
 	        "{}cksumtype: {}\n\
-         {}checksum: {}",
+             {}checksum: {}",
 	        indentation,
 	        checksum_type_to_string(ck.cksumtype),
 	        indentation,
@@ -517,7 +515,7 @@ fn checksum_to_string(ck: &Checksum, indent_level: usize) -> String
 
 fn checksum_type_to_string(ct: i32) -> String
 {
-	return format!("{:#06x} -> {}", ct, checksum_type_name(ct));
+	format!("{:#06x} -> {}", ct, checksum_type_name(ct))
 }
 
 fn checksum_type_name(ct: i32) -> &'static str
@@ -556,7 +554,7 @@ fn pa_pac_options_to_string(po: &PaPacOptions, indent_level: usize) -> String
 		}
 	}
 
-	return format!("{}kerberos-flags: {:#06x} -> {}", indentation, po.kerberos_flags.flags, names.join(" "));
+	format!("{}kerberos-flags: {:#06x} -> {}", indentation, po.kerberos_flags.flags, names.join(" "))
 }
 
 pub fn pa_pac_request_to_string(pr: &KerbPaPacRequest, indent_level: usize) -> String
@@ -646,7 +644,7 @@ pub fn msg_type_name(msg_type: i32) -> &'static str
 	}
 }
 
-pub fn tickets_to_string(tickets: &Vec<Ticket>, indent_level: usize) -> String
+pub fn tickets_to_string(tickets: &[Ticket], indent_level: usize) -> String
 {
 	let indentation = indent(indent_level);
 	let mut vs = Vec::new();
@@ -662,7 +660,7 @@ pub fn tickets_to_string(tickets: &Vec<Ticket>, indent_level: usize) -> String
 		))
 	}
 
-	return vs.join("\n");
+	vs.join("\n")
 }
 
 pub fn ticket_to_string(tkt: &Ticket, indent_level: usize) -> String
@@ -670,9 +668,9 @@ pub fn ticket_to_string(tkt: &Ticket, indent_level: usize) -> String
 	let indentation = indent(indent_level);
 	format!(
 	        "{}tkt-vno: {}\n\
-         {}realm: {}\n\
-         {}sname:\n{}\n\
-         {}enc-part:\n{}",
+             {}realm: {}\n\
+             {}sname:\n{}\n\
+             {}enc-part:\n{}",
 	        indentation,
 	        tkt.tkt_vno,
 	        indentation,
@@ -689,14 +687,14 @@ pub fn encrypted_data_to_string(ed: &EncryptedData, indent_level: usize) -> Stri
 	let indentation = indent(indent_level);
 	format!(
 	        "{}etype: {}\n\
-         {}kvno: {}\n\
-         {}cipher: {}",
+             {}kvno: {}\n\
+             {}cipher: {} bytes",
 	        indentation,
 	        etype_to_string(ed.etype),
 	        indentation,
 	        ed.kvno.map(|v| format!("{}", v)).unwrap_or(NONE.into()),
 	        indentation,
-	        format!("{} bytes", ed.cipher.len())
+	        ed.cipher.len()
 	)
 }
 
@@ -707,7 +705,7 @@ fn indent(level: usize) -> String
 	{
 		ind = format!(" {}", ind);
 	}
-	return ind;
+	ind
 }
 
 pub fn krb_cred_info_to_string(kci: &KrbCredInfo, indent_level: usize) -> String
@@ -715,42 +713,36 @@ pub fn krb_cred_info_to_string(kci: &KrbCredInfo, indent_level: usize) -> String
 	let indentation = indent(indent_level);
 	format!(
 	        "{}key:\n{}\n\
-         {}prealm: {}\n\
-         {}pname:\n{}\n\
-         {}flags: {}\n\
-         {}authtime: {}\n\
-         {}starttime: {}\n\
-         {}endtime: {}\n\
-         {}renew-till: {}\n\
-         {}srealm: {}\n\
-         {}sname:\n{}\n\
-         {}caddr: <Not Implemented>",
+             {}prealm: {}\n\
+             {}pname:\n{}\n\
+             {}flags: {}\n\
+             {}authtime: {}\n\
+             {}starttime: {}\n\
+             {}endtime: {}\n\
+             {}renew-till: {}\n\
+             {}srealm: {}\n\
+             {}sname:\n{}\n\
+             {}caddr: <Not Implemented>",
 	        indentation,
 	        encryption_key_to_string(&kci.key, indent_level + INDENT_STEP),
 	        indentation,
 	        &kci.prealm.as_ref().unwrap_or(&NONE.to_string()),
 	        indentation,
-	        &kci.pname
-	            .as_ref()
-	            .map(|v| principal_name_to_string(&v, indent_level + INDENT_STEP))
-	            .unwrap_or(NONE.into()),
+	        &kci.pname.as_ref().map(|v| principal_name_to_string(v, indent_level + INDENT_STEP)).unwrap_or(NONE.into()),
 	        indentation,
 	        &kci.flags.as_ref().map(|v| kerberos_flags_to_string(v.flags)).unwrap_or(NONE.into()),
 	        indentation,
-	        &kci.authtime.as_ref().map(|v| kerberos_time_to_string(&v)).unwrap_or(NONE.into()),
+	        &kci.authtime.as_ref().map(kerberos_time_to_string).unwrap_or(NONE.into()),
 	        indentation,
-	        &kci.starttime.as_ref().map(|v| kerberos_time_to_string(&v)).unwrap_or(NONE.into()),
+	        &kci.starttime.as_ref().map(kerberos_time_to_string).unwrap_or(NONE.into()),
 	        indentation,
-	        &kci.endtime.as_ref().map(|v| kerberos_time_to_string(&v)).unwrap_or(NONE.into()),
+	        &kci.endtime.as_ref().map(kerberos_time_to_string).unwrap_or(NONE.into()),
 	        indentation,
-	        &kci.renew_till.as_ref().map(|v| kerberos_time_to_string(&v)).unwrap_or(NONE.into()),
+	        &kci.renew_till.as_ref().map(kerberos_time_to_string).unwrap_or(NONE.into()),
 	        indentation,
 	        &kci.srealm.as_ref().unwrap_or(&NONE.into()),
 	        indentation,
-	        &kci.sname
-	            .as_ref()
-	            .map(|v| principal_name_to_string(&v, indent_level + INDENT_STEP))
-	            .unwrap_or(NONE.into()),
+	        &kci.sname.as_ref().map(|v| principal_name_to_string(v, indent_level + INDENT_STEP)).unwrap_or(NONE.into()),
 	        indentation
 	)
 }
@@ -760,7 +752,7 @@ pub fn encryption_key_to_string(ek: &EncryptionKey, indent_level: usize) -> Stri
 	let indentation = indent(indent_level);
 	format!(
 	        "{}keytype: {}\n\
-         {}keyvalue: {}",
+             {}keyvalue: {}",
 	        indentation,
 	        etype_to_string(ek.keytype),
 	        indentation,
@@ -768,7 +760,7 @@ pub fn encryption_key_to_string(ek: &EncryptionKey, indent_level: usize) -> Stri
 	)
 }
 
-pub fn octet_string_to_string(os: &Vec<u8>) -> String
+pub fn octet_string_to_string(os: &[u8]) -> String
 {
 	let mut vs = Vec::new();
 
@@ -870,7 +862,7 @@ pub fn kerberos_flags_to_string(flags: u32) -> String
 	format!("{:#06x} -> {}", flags, flags_strs.join(" "))
 }
 
-pub fn etypes_to_string(etypes: &Vec<i32>, indent_level: usize) -> String
+pub fn etypes_to_string(etypes: &[i32], indent_level: usize) -> String
 {
 	let indentation = indent(indent_level);
 	let mut vs = Vec::new();
@@ -887,7 +879,7 @@ pub fn etypes_to_string(etypes: &Vec<i32>, indent_level: usize) -> String
 		))
 	}
 
-	return vs.join("\n");
+	vs.join("\n")
 }
 
 pub fn etype_to_string(etype: i32) -> String
@@ -947,7 +939,7 @@ pub fn etype_info2_to_string(padatas: &EtypeInfo2, indent_level: usize) -> Strin
 		))
 	}
 
-	return vs.join("\n");
+	vs.join("\n")
 }
 
 pub fn etype_info2_entry_to_string(entry: &EtypeInfo2Entry, indent_level: usize) -> String
@@ -962,6 +954,6 @@ pub fn etype_info2_entry_to_string(entry: &EtypeInfo2Entry, indent_level: usize)
 	        indentation,
 	        &entry.salt.as_ref().unwrap_or(&NONE.to_string()),
 	        indentation,
-	        &entry.s2kparams.as_ref().map(|v| octet_string_to_string(&v)).unwrap_or(NONE.into())
+	        &entry.s2kparams.as_ref().map(|v| octet_string_to_string(v)).unwrap_or(NONE.into())
 	)
 }

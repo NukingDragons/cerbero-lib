@@ -64,38 +64,24 @@ pub fn ask(user: KrbUser,
 	{
 		Some(service) => match impersonate_user
 		{
-			Some(impersonate_user) =>
-			{
-				return ask_s4u2proxy(
-				                     user,
-				                     impersonate_user,
-				                     service,
-				                     user_service,
-				                     rename_service,
-				                     vault,
-				                     user_key.as_ref(),
-				                     credential_format,
-				                     kdccomm,
-				);
-			},
-			None =>
-			{
-				return ask_tgs(user, service, rename_service, user_key.as_ref(), credential_format, vault, kdccomm);
-			},
+			Some(impersonate_user) => ask_s4u2proxy(
+			                                        user,
+			                                        impersonate_user,
+			                                        service,
+			                                        user_service,
+			                                        rename_service,
+			                                        vault,
+			                                        user_key.as_ref(),
+			                                        credential_format,
+			                                        kdccomm,
+			),
+			None => ask_tgs(user, service, rename_service, user_key.as_ref(), credential_format, vault, kdccomm),
 		},
 		None => match impersonate_user
 		{
 			Some(impersonate_user) =>
 			{
-				return ask_s4u2self(
-				                    user,
-				                    impersonate_user,
-				                    user_service,
-				                    vault,
-				                    user_key.as_ref(),
-				                    credential_format,
-				                    kdccomm,
-				);
+				ask_s4u2self(user, impersonate_user, user_service, vault, user_key.as_ref(), credential_format, kdccomm)
 			},
 			None => match user_key
 			{
