@@ -1,9 +1,9 @@
 use super::Vault;
-use crate::core::CredFormat;
-use crate::core::{TicketCred, TicketCreds};
-use crate::error::Error;
-use crate::KrbUser;
-use crate::Result;
+use crate::{
+	core::{CredFormat, TicketCred, TicketCreds},
+	error::Error,
+	KrbUser, Result,
+};
 use kerberos_asn1::{Asn1Object, KrbCred};
 use kerberos_ccache::CCache;
 use std::cell::RefCell;
@@ -19,6 +19,14 @@ impl BufVault
 	pub fn new() -> Self
 	{
 		Self { ticket_creds: RefCell::new(TicketCreds::empty()) }
+	}
+}
+
+impl Default for BufVault
+{
+	fn default() -> Self
+	{
+		Self::new()
 	}
 }
 
@@ -45,15 +53,15 @@ impl Vault for BufVault
 		Ok(self.ticket_creds.borrow().clone())
 	}
 
-	fn save(&self, _: TicketCreds) -> Result<()>
+	fn save(&self, tickets: TicketCreds) -> Result<()>
 	{
+		*self.ticket_creds.borrow_mut() = tickets;
 		Ok(())
 	}
 
 	fn save_as(&self, tickets: TicketCreds, cred_format: CredFormat) -> Result<()>
 	{
-		*self.ticket_creds.borrow_mut() = rebuild_ticket(tickets, cred_format)?;
-		Ok(())
+		self.save(rebuild_ticket(tickets, cred_format)?)
 	}
 
 	fn change_format(&self, cred_format: CredFormat) -> Result<()>
@@ -73,15 +81,6 @@ impl Vault for BufVault
 	                 -> Result<TicketCreds>
 	{
 		Ok(self.ticket_creds.borrow().s4u2self_tgss(user, impersonate_user, user_service))
-	}
-}
-
-fn get_raw_cred(krb_cred: KrbCred) -> Vec<u8>
-{
-	match <KrbCred as TryInto<CCache>>::try_into(krb_cred.clone())
-	{
-		Ok(ccache) => ccache.build(),
-		Err(_) => krb_cred.build(),
 	}
 }
 
@@ -121,7 +120,7 @@ fn rebuild_ticket(ticket: TicketCreds, cred_format: CredFormat) -> Result<Ticket
 
 fn determine_ticket_format(ticket: TicketCreds) -> Result<CredFormat>
 {
-	let data = get_raw_cred(ticket.into());
+	let data = ticket.as_bytes();
 
 	match CCache::parse(&data)
 	{

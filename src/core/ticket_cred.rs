@@ -1,9 +1,14 @@
 //! Structs to allow handle easier tickets and their associated KrbCredInfo
 
-use crate::core::forge::{new_nt_enterprise, new_nt_principal, new_nt_srv_inst};
-use crate::core::KrbUser;
-use crate::error::Error;
+use crate::{
+	core::{
+		forge::{new_nt_enterprise, new_nt_principal, new_nt_srv_inst},
+		KrbUser,
+	},
+	error::{Error, Result},
+};
 use kerberos_asn1::{Asn1Object, EncKrbCredPart, EncryptedData, KrbCred, KrbCredInfo, PrincipalName, Ticket};
+use kerberos_ccache::CCache;
 use kerberos_constants::etypes::NO_ENCRYPTION;
 use std::slice::Iter;
 
@@ -26,6 +31,39 @@ impl TicketCreds
 		Self { ticket_creds: Vec::new() }
 	}
 
+	pub fn as_bytes(&self) -> Vec<u8>
+	{
+		let krb_cred: KrbCred = (*self).clone().into();
+
+		match <KrbCred as TryInto<CCache>>::try_into(krb_cred.clone())
+		{
+			Ok(ccache) => ccache.build(),
+			Err(_) => krb_cred.build(),
+		}
+	}
+
+	pub fn from_bytes(vec: Vec<u8>) -> Result<Self>
+	{
+		match CCache::parse(&vec)
+		{
+			Ok((_, ccache)) =>
+			{
+				let krb_cred: KrbCred =
+					ccache.try_into().map_err(|_| Error::DataError("Error parsing ccache data content".to_string()))?;
+
+				Ok(TicketCreds::try_from(krb_cred)?)
+			},
+			Err(_) =>
+			{
+				let (_, krb_cred) = KrbCred::parse(&vec).map_err(|_| {
+					                                        Error::DataError("Error parsing content of ccache/krb".to_string())
+				                                        })?;
+
+				Ok(TicketCreds::try_from(krb_cred)?)
+			},
+		}
+	}
+
 	pub fn push(&mut self, ticket_info: TicketCred)
 	{
 		self.ticket_creds.push(ticket_info);
@@ -33,17 +71,17 @@ impl TicketCreds
 
 	pub fn iter(&self) -> Iter<TicketCred>
 	{
-		return self.ticket_creds.iter();
+		self.ticket_creds.iter()
 	}
 
 	pub fn is_empty(&self) -> bool
 	{
-		return self.ticket_creds.is_empty();
+		self.ticket_creds.is_empty()
 	}
 
 	pub fn get(&self, index: usize) -> Option<&TicketCred>
 	{
-		return self.ticket_creds.get(index);
+		self.ticket_creds.get(index)
 	}
 
 	pub fn filter<P>(&self, predicate: P) -> Self
@@ -66,7 +104,7 @@ impl TicketCreds
 			    {
 				    return prealm.to_lowercase() == realm.to_lowercase();
 			    }
-			    return false;
+			    false
 		    })
 	}
 
@@ -78,7 +116,7 @@ impl TicketCreds
 			    {
 				    return pname == name;
 			    }
-			    return false;
+			    false
 		    })
 	}
 
@@ -90,7 +128,7 @@ impl TicketCreds
 			    {
 				    return srealm.to_lowercase() == realm.to_lowercase();
 			    }
-			    return false;
+			    false
 		    })
 	}
 
@@ -102,27 +140,27 @@ impl TicketCreds
 			    {
 				    return sname == name;
 			    }
-			    return false;
+			    false
 		    })
 	}
 
 	/// Filter tickets for user_realm. Same as prealm. Case insensitive.
 	pub fn user_realm(&self, realm: &str) -> Self
 	{
-		return self.prealm(realm);
+		self.prealm(realm)
 	}
 
 	/// Filter for the username.
 	pub fn username(&self, name: &str) -> Self
 	{
 		let pname = new_nt_principal(name);
-		return self.pname(&pname);
+		self.pname(&pname)
 	}
 
 	/// Filter for the username and the user realm.
 	pub fn user(&self, user: &KrbUser) -> Self
 	{
-		return self.user_realm(&user.realm).username(&user.name);
+		self.user_realm(&user.realm).username(&user.name)
 	}
 
 	/// Filter to only return tickets that includes a given name in service. It
@@ -136,33 +174,33 @@ impl TicketCreds
 			    {
 				    return sname.name_string.iter().map(|s| s.to_lowercase()).any(|s| s.to_lowercase() == name_lower);
 			    }
-			    return false;
+			    false
 		    })
 	}
 
 	/// Filter to only returns TGTs.
 	pub fn tgt(&self) -> Self
 	{
-		return self.service_name("krbtgt");
+		self.service_name("krbtgt")
 	}
 
 	/// Filter to only returns TGTs for a given realm.
 	pub fn tgt_realm(&self, realm: &str) -> Self
 	{
 		let tgt_service = new_nt_srv_inst(&format!("krbtgt/{}", realm));
-		return self.sname(&tgt_service);
+		self.sname(&tgt_service)
 	}
 
 	/// Filter to only returns TGTs for a given realm.
 	pub fn user_tgt_realm(&self, user: &KrbUser, realm: &str) -> Self
 	{
-		return self.tgt_realm(realm).user(user);
+		self.tgt_realm(realm).user(user)
 	}
 
 	/// Filter to return tickets for an user to an specific service
-	pub fn user_service(&self, client: &KrbUser, sname: &PrincipalName, srealm: &String) -> Self
+	pub fn user_service(&self, client: &KrbUser, sname: &PrincipalName, srealm: &str) -> Self
 	{
-		return self.user(client).sname(sname).srealm(srealm);
+		self.user(client).sname(sname).srealm(srealm)
 	}
 
 	/// Returns the s4u2self tgss.
@@ -176,29 +214,36 @@ impl TicketCreds
 			None => new_nt_enterprise(user),
 		};
 
-		return self.user_service(impersonate_user, &sname, srealm);
+		self.user_service(impersonate_user, &sname, srealm)
 	}
 }
 
-impl Into<KrbCred> for TicketCreds
+impl From<TicketCreds> for KrbCred
 {
-	fn into(self) -> KrbCred
+	fn from(ticket_creds: TicketCreds) -> KrbCred
 	{
 		let mut krb_cred = KrbCred::default();
-		let mut tickets = Vec::with_capacity(self.ticket_creds.len());
-		let mut cred_infos = Vec::with_capacity(self.ticket_creds.len());
+		let mut tickets = Vec::with_capacity(ticket_creds.ticket_creds.len());
+		let mut cred_infos = Vec::with_capacity(ticket_creds.ticket_creds.len());
 
-		for ticket_cred_info in self.ticket_creds
+		for ticket_cred_info in ticket_creds.ticket_creds
 		{
 			tickets.push(ticket_cred_info.ticket);
 			cred_infos.push(ticket_cred_info.cred_info);
 		}
 
 		krb_cred.tickets = tickets;
-		let mut cred_part = EncKrbCredPart::default();
-		cred_part.ticket_info = cred_infos;
+		let cred_part = EncKrbCredPart { ticket_info: cred_infos, ..Default::default() };
 		krb_cred.enc_part = EncryptedData::new(NO_ENCRYPTION, None, cred_part.build());
-		return krb_cred;
+		krb_cred
+	}
+}
+
+impl From<TicketCreds> for Vec<u8>
+{
+	fn from(tickets: TicketCreds) -> Vec<u8>
+	{
+		tickets.as_bytes()
 	}
 }
 
@@ -208,17 +253,17 @@ impl TryFrom<KrbCred> for TicketCreds
 {
 	type Error = Error;
 
-	fn try_from(krb_cred: KrbCred) -> Result<Self, Error>
+	fn try_from(krb_cred: KrbCred) -> Result<Self>
 	{
 		if krb_cred.enc_part.etype != NO_ENCRYPTION
 		{
-			return Err(Error::DataError(format!("Unable to decrypt the credentials")));
+			return Err(Error::DataError("Unable to decrypt the credentials".to_string()));
 		}
 
 		let (_, cred_part) = EncKrbCredPart::parse(&krb_cred.enc_part.cipher).map_err(|_| {
-			                                                                     Error::DataError(format!(
-				"Error parsing credentials: EncKrbCredPart"
-			))
+			                                                                     Error::DataError(
+				"Error parsing credentials: EncKrbCredPart".to_string()
+			)
 		                                                                     })?;
 
 		let tickets = krb_cred.tickets;
@@ -239,7 +284,7 @@ impl From<(Vec<Ticket>, Vec<KrbCredInfo>)> for TicketCreds
 			ticket_cred_infos.push(TicketCred::new(ticket, cred_info));
 		}
 
-		return Self::new(ticket_cred_infos);
+		Self::new(ticket_cred_infos)
 	}
 }
 
@@ -247,7 +292,7 @@ impl From<Vec<TicketCred>> for TicketCreds
 {
 	fn from(v: Vec<TicketCred>) -> Self
 	{
-		return Self::new(v);
+		Self::new(v)
 	}
 }
 
@@ -255,7 +300,7 @@ impl From<TicketCred> for TicketCreds
 {
 	fn from(ticket_info: TicketCred) -> Self
 	{
-		return Self::new(vec![ticket_info]);
+		Self::new(vec![ticket_info])
 	}
 }
 
@@ -271,19 +316,19 @@ impl TicketCred
 {
 	pub fn new(ticket: Ticket, cred_info: KrbCredInfo) -> Self
 	{
-		return Self { ticket, cred_info };
+		Self { ticket, cred_info }
 	}
 
 	pub fn is_tgt(&self) -> bool
 	{
 		if let Some(sname) = &self.cred_info.sname
 		{
-			if let Some(service) = sname.name_string.get(0)
+			if let Some(service) = sname.name_string.first()
 			{
 				return service == "krbtgt";
 			}
 		}
-		return false;
+		false
 	}
 
 	pub fn is_tgt_for_realm(&self, realm: &str) -> bool
@@ -295,7 +340,7 @@ impl TicketCred
 				return tgt_realm.to_lowercase() == realm.to_lowercase();
 			}
 		}
-		return false;
+		false
 	}
 
 	pub fn is_for_service(&self, service: &PrincipalName) -> bool
@@ -304,12 +349,12 @@ impl TicketCred
 		{
 			return srv == service;
 		}
-		return false;
+		false
 	}
 
 	pub fn service(&self) -> Option<&PrincipalName>
 	{
-		return self.cred_info.sname.as_ref();
+		self.cred_info.sname.as_ref()
 	}
 
 	pub fn service_host(&self) -> Option<&String>
@@ -318,7 +363,7 @@ impl TicketCred
 		{
 			return sname.name_string.get(1);
 		}
-		return None;
+		None
 	}
 
 	pub fn change_sname(&mut self, sname: PrincipalName)
@@ -332,6 +377,6 @@ impl From<(Ticket, KrbCredInfo)> for TicketCred
 {
 	fn from((t, kci): (Ticket, KrbCredInfo)) -> Self
 	{
-		return Self::new(t, kci);
+		Self::new(t, kci)
 	}
 }
