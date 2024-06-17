@@ -108,7 +108,7 @@ _(View the `kerberoast` example [here](examples/kerberoast/src/main.rs))_
 ## TODO
 
 > [!note]
-> - Clean up the code, there's a ton of verbose returns that don't need to be there and some double dereferences
+> - Clean up the code, clippy thinks there are too many args to some functions + large Result types
 > - Make the arguments to the commands more concise
 > - Remove some of the allows inside of lib.rs
 > - Improve documentation significantly, including README and the examples directory
