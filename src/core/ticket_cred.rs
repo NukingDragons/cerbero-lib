@@ -6,6 +6,7 @@ use crate::{
 		KrbUser,
 	},
 	error::{Error, Result},
+	CredFormat,
 };
 use kerberos_asn1::{Asn1Object, EncKrbCredPart, EncryptedData, KrbCred, KrbCredInfo, PrincipalName, Ticket};
 use kerberos_ccache::CCache;
@@ -29,39 +30,6 @@ impl TicketCreds
 	pub fn empty() -> Self
 	{
 		Self { ticket_creds: Vec::new() }
-	}
-
-	pub fn as_bytes(&self) -> Vec<u8>
-	{
-		let krb_cred: KrbCred = (*self).clone().into();
-
-		match <KrbCred as TryInto<CCache>>::try_into(krb_cred.clone())
-		{
-			Ok(ccache) => ccache.build(),
-			Err(_) => krb_cred.build(),
-		}
-	}
-
-	pub fn from_bytes(vec: Vec<u8>) -> Result<Self>
-	{
-		match CCache::parse(&vec)
-		{
-			Ok((_, ccache)) =>
-			{
-				let krb_cred: KrbCred =
-					ccache.try_into().map_err(|_| Error::DataError("Error parsing ccache data content".to_string()))?;
-
-				Ok(TicketCreds::try_from(krb_cred)?)
-			},
-			Err(_) =>
-			{
-				let (_, krb_cred) = KrbCred::parse(&vec).map_err(|_| {
-					                                        Error::DataError("Error parsing content of ccache/krb".to_string())
-				                                        })?;
-
-				Ok(TicketCreds::try_from(krb_cred)?)
-			},
-		}
 	}
 
 	pub fn push(&mut self, ticket_info: TicketCred)
@@ -239,14 +207,6 @@ impl From<TicketCreds> for KrbCred
 	}
 }
 
-impl From<TicketCreds> for Vec<u8>
-{
-	fn from(tickets: TicketCreds) -> Vec<u8>
-	{
-		tickets.as_bytes()
-	}
-}
-
 /// Convert from Kerberos credentials in plain text, the usual way of storing
 /// them in machines. In case the credentials are encrypted this will fail.
 impl TryFrom<KrbCred> for TicketCreds
@@ -317,6 +277,44 @@ impl TicketCred
 	pub fn new(ticket: Ticket, cred_info: KrbCredInfo) -> Self
 	{
 		Self { ticket, cred_info }
+	}
+
+	pub fn as_bytes(&self, cred_format: CredFormat) -> Result<Vec<u8>>
+	{
+		let krb_cred: KrbCred = TicketCreds::new(vec![(*self).clone()]).into();
+
+		match cred_format
+		{
+			CredFormat::Krb => Ok(krb_cred.build()),
+			CredFormat::Ccache =>
+			{
+				let ccache: CCache = krb_cred.try_into()
+				                             .map_err(|_| Error::DataError("Error converting KrbCred to CCache".to_string()))?;
+				Ok(ccache.build())
+			},
+		}
+	}
+
+	pub fn from_bytes(vec: Vec<u8>) -> Result<Self>
+	{
+		match CCache::parse(&vec)
+		{
+			Ok((_, ccache)) =>
+			{
+				let krb_cred: KrbCred =
+					ccache.try_into().map_err(|_| Error::DataError("Error parsing ccache data content".to_string()))?;
+
+				Ok(TicketCreds::try_from(krb_cred)?.ticket_creds[0].clone())
+			},
+			Err(_) =>
+			{
+				let (_, krb_cred) = KrbCred::parse(&vec).map_err(|_| {
+					                                        Error::DataError("Error parsing content of ccache/krb".to_string())
+				                                        })?;
+
+				Ok(TicketCreds::try_from(krb_cred)?.ticket_creds[0].clone())
+			},
+		}
 	}
 
 	pub fn is_tgt(&self) -> bool

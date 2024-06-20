@@ -25,7 +25,7 @@ pub enum TransportProtocol
 }
 
 /// Struct to package KDC's
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Kdcs
 {
 	kdcs: HashMap<String, IpAddr>,
@@ -75,6 +75,7 @@ impl Kdcs
 }
 
 /// Struct to package the KDC's and the protocol to communicate with them
+#[derive(Clone)]
 pub struct KdcComm
 {
 	kdcs: Kdcs,

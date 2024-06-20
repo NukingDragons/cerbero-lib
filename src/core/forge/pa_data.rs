@@ -10,6 +10,18 @@ use kerberos_constants::{
 	pa_data_types::{self, PA_FOR_USER, PA_PAC_OPTIONS, PA_TGS_REQ},
 };
 
+/// Helper to create a PA-DATA that contains a PA-REQ-ENC-PA-REP
+pub fn new_pa_req_enc_pa_rep() -> PaData
+{
+	PaData::new(149, vec![])
+}
+
+/// Helper to create a PA-DATA that contains a PA-REQ-ENC-PA-REP
+pub fn new_pa_as_freshness() -> PaData
+{
+	PaData::new(150, vec![])
+}
+
 /// Helper to create a PA-DATA that contains a PA-ENC-TS-ENC struct
 pub fn new_pa_data_encrypted_timestamp(cipher: &Cipher) -> PaData
 {

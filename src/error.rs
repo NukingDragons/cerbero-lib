@@ -18,6 +18,8 @@ pub enum Error
 	DataError(String),
 }
 
+impl std::error::Error for Error {}
+
 impl Error
 {
 	pub fn is_not_found_error(&self) -> bool

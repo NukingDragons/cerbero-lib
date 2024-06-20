@@ -3,7 +3,8 @@ use super::{
 	{
 		kdc_req::KdcReqBuilder,
 		pa_data::{
-			new_pa_data_ap_req, new_pa_data_encrypted_timestamp, new_pa_data_pa_for_user, new_pa_data_pac_options,
+			new_pa_as_freshness, new_pa_data_ap_req, new_pa_data_encrypted_timestamp, new_pa_data_pa_for_user,
+			new_pa_data_pac_options, new_pa_req_enc_pa_rep,
 		},
 	},
 };
@@ -22,6 +23,8 @@ pub fn build_as_req(user: KrbUser, cipher: Option<&Cipher>, etypes: Option<Vec<i
 		let padata = new_pa_data_encrypted_timestamp(cipher);
 		as_req_builder = as_req_builder.push_padata(padata).etypes(vec![cipher.etype()]);
 	}
+
+	as_req_builder = as_req_builder.push_padata(new_pa_as_freshness()).push_padata(new_pa_req_enc_pa_rep());
 
 	if let Some(etypes) = etypes
 	{

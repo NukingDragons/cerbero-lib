@@ -23,7 +23,8 @@ impl KdcReqBuilder
 	pub fn new(realm: String) -> Self
 	{
 		Self { realm: realm.clone(),
-		       sname: Some(PrincipalName { name_type: principal_names::NT_PRINCIPAL,
+		       // Linux krb5 kinit uses NT_SRV_INST here for the principal name
+		       sname: Some(PrincipalName { name_type: principal_names::NT_SRV_INST,
 		                                   name_string: vec!["krbtgt".into(), realm] }),
 		       etypes: supported_etypes(),
 		       kdc_options: kdc_options::FORWARDABLE
@@ -33,8 +34,8 @@ impl KdcReqBuilder
 		       cname: None,
 		       padatas: Vec::new(),
 		       nonce: rand::thread_rng().gen(),
-		       till: Utc::now().checked_add_signed(Duration::weeks(20 * 52)).unwrap().into(),
-		       rtime: Some(Utc::now().checked_add_signed(Duration::weeks(20 * 52)).unwrap().into()),
+		       till: Utc::now().checked_add_signed(Duration::days(1)).unwrap().into(),
+		       rtime: Some(Utc::now().checked_add_signed(Duration::days(1)).unwrap().into()),
 		       additional_tickets: Vec::new() }
 	}
 

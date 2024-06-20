@@ -23,7 +23,7 @@ pub fn craft_ticket_info(user: KrbUser,
                          etype: Option<i32>)
                          -> TicketCred
 {
-	let cipher = Cipher::generate(&user_key, &user, etype);
+	let cipher = Cipher::generate(&user_key, &user, etype, None);
 	let session_key = random_key(cipher.etype());
 	let spn = service.unwrap_or(format!("krbtgt/{}", &user.realm));
 	let sname = new_principal_or_srv_inst(&spn, &user.realm);

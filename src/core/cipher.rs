@@ -13,9 +13,9 @@ pub struct Cipher
 
 impl Cipher
 {
-	pub fn generate(user_key: &Key, user: &KrbUser, preferred_etype: Option<i32>) -> Self
+	pub fn generate(user_key: &Key, user: &KrbUser, preferred_etype: Option<i32>, salt: Option<Vec<u8>>) -> Self
 	{
-		let (cipher, key) = generate_cipher_and_key(user_key, user, preferred_etype);
+		let (cipher, key) = generate_cipher_and_key(user_key, user, preferred_etype, salt);
 		Self::new(cipher, key)
 	}
 
@@ -86,7 +86,8 @@ impl From<EncryptionKey> for Cipher
 /// (in case of password)
 pub fn generate_cipher_and_key(user_key: &Key,
                                user: &KrbUser,
-                               preferred_etype: Option<i32>)
+                               preferred_etype: Option<i32>,
+                               salt: Option<Vec<u8>>)
                                -> (Box<dyn KerberosCipher>, Vec<u8>)
 {
 	match user_key
@@ -95,8 +96,15 @@ pub fn generate_cipher_and_key(user_key: &Key,
 		{
 			let etype = preferred_etype.unwrap_or(etypes::AES256_CTS_HMAC_SHA1_96);
 			let cipher = new_kerberos_cipher(etype).unwrap_or_else(|_| panic!("Unknown etype {}", etype));
-			let salt = cipher.generate_salt(&user.realm, &user.name);
-			let key = cipher.generate_key_from_string(secret, &salt);
+			let key = match salt
+			{
+				Some(s) => cipher.generate_key_from_string(secret, &s),
+				None =>
+				{
+					let s = cipher.generate_salt(&user.realm, &user.name);
+					cipher.generate_key_from_string(secret, &s)
+				},
+			};
 			(cipher, key)
 		},
 		Key::RC4Key(key) =>

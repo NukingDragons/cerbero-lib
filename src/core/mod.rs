@@ -24,6 +24,9 @@ pub mod stringifier;
 mod vault;
 pub use vault::{BufVault, EmptyVault, FileVault, Vault};
 
+#[cfg(target_os = "windows")]
+pub use vault::WindowsVault;
+
 mod etypes;
 pub use etypes::EncryptionType;
 

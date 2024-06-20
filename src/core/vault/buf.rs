@@ -12,21 +12,14 @@ use std::cell::RefCell;
 pub struct BufVault
 {
 	ticket_creds: RefCell<TicketCreds>,
+	cred_format: RefCell<CredFormat>,
 }
 
 impl BufVault
 {
-	pub fn new() -> Self
+	pub fn new(cred_format: CredFormat) -> Self
 	{
-		Self { ticket_creds: RefCell::new(TicketCreds::empty()) }
-	}
-}
-
-impl Default for BufVault
-{
-	fn default() -> Self
-	{
-		Self::new()
+		Self { ticket_creds: RefCell::new(TicketCreds::empty()), cred_format: RefCell::new(cred_format) }
 	}
 }
 
@@ -39,12 +32,15 @@ impl Vault for BufVault
 
 	fn support_cred_format(&self) -> Result<Option<CredFormat>>
 	{
-		Ok(Some(determine_ticket_format(self.ticket_creds.borrow().clone())?))
+		let cred_format = self.cred_format.borrow();
+
+		Ok(Some(*cred_format))
 	}
 
 	fn add(&mut self, ticket_info: TicketCred) -> Result<()>
 	{
-		self.ticket_creds.borrow_mut().push(ticket_info);
+		let mut ticket_creds = self.ticket_creds.borrow_mut();
+		ticket_creds.push(ticket_info);
 		Ok(())
 	}
 
@@ -55,18 +51,28 @@ impl Vault for BufVault
 
 	fn save(&self, tickets: TicketCreds) -> Result<()>
 	{
-		*self.ticket_creds.borrow_mut() = tickets;
+		let mut ticket_creds = self.ticket_creds.borrow_mut();
+		*ticket_creds = tickets;
+
 		Ok(())
 	}
 
 	fn save_as(&self, tickets: TicketCreds, cred_format: CredFormat) -> Result<()>
 	{
-		self.save(rebuild_ticket(tickets, cred_format)?)
+		let tickets = rebuild_ticket(tickets, cred_format)?;
+
+		let mut internal_cred_format = self.cred_format.borrow_mut();
+		*internal_cred_format = cred_format;
+
+		self.save(tickets)
 	}
 
 	fn change_format(&self, cred_format: CredFormat) -> Result<()>
 	{
-		self.save_as(self.ticket_creds.borrow().clone(), cred_format)
+		// prevent a BorrowMutError
+		let ticket_creds = (*self.ticket_creds.borrow()).clone();
+
+		self.save_as(ticket_creds, cred_format)
 	}
 
 	fn get_user_tgts(&self, user: &KrbUser) -> Result<TicketCreds>
@@ -114,28 +120,6 @@ fn rebuild_ticket(ticket: TicketCreds, cred_format: CredFormat) -> Result<Ticket
 				KrbCred::parse(&data).map_err(|_| Error::DataError("Error parsing content of ccache/krb".to_string()))?;
 
 			Ok(TicketCreds::try_from(krb_cred)?)
-		},
-	}
-}
-
-fn determine_ticket_format(ticket: TicketCreds) -> Result<CredFormat>
-{
-	let data = ticket.as_bytes();
-
-	match CCache::parse(&data)
-	{
-		Ok((_, ccache)) =>
-		{
-			let _: KrbCred =
-				ccache.try_into().map_err(|_| Error::DataError("Error parsing ccache data content".to_string()))?;
-
-			Ok(CredFormat::Ccache)
-		},
-		Err(_) =>
-		{
-			let (_, _) =
-				KrbCred::parse(&data).map_err(|_| Error::DataError("Error parsing content of ccache/krb".to_string()))?;
-			Ok(CredFormat::Krb)
 		},
 	}
 }

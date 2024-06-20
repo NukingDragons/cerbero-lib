@@ -7,6 +7,7 @@ pub enum Rep
 	AsRep(AsRep),
 	TgsRep(TgsRep),
 	KrbError(KrbError),
+	#[allow(dead_code)]
 	Raw(Vec<u8>),
 }
 

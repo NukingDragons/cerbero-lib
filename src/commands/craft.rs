@@ -1,6 +1,6 @@
 use crate::{
 	core::{craft_ticket_info, CredFormat, EncryptionType, TicketCreds, Vault},
-	KrbUser, Result,
+	Error, KrbUser, Result,
 };
 use kerberos_crypto::Key;
 use ms_pac::PISID;
@@ -13,7 +13,6 @@ use ms_pac::PISID;
 /// let vault = FileVault::new("tickets.ccache".to_string());
 ///
 /// let rid = 500;
-/// let sid = PISID::try_from("DOMAIN_SID").expect("Failed to convert SID");
 /// let group_rids = [512];
 ///
 /// let krbtgt = Key::from_rc4_key_string("KRBTGT NT HASH").expect("Failed to convert krbtgt key");
@@ -24,7 +23,7 @@ use ms_pac::PISID;
 ///             None,
 ///             krbtgt,
 ///             rid,
-///             sid,
+///             "DOMAIN SID",
 ///             &group_rids,
 ///             Some(EncryptionType::RC4),
 ///             CredFormat::Ccache,
@@ -46,13 +45,19 @@ pub fn craft(realm: &str,
              service: Option<String>,
              ticket_key: Key,
              user_rid: u32,
-             realm_sid: PISID,
+             realm_sid: &str,
              groups: &[u32],
              ticket_key_enc: Option<EncryptionType>,
              cred_format: CredFormat,
              vault: &dyn Vault)
              -> Result<()>
 {
+	let pisid = match PISID::try_from(realm_sid)
+	{
+		Ok(p) => p,
+		Err(e) => return Err(Error::String(e)),
+	};
+
 	let user = KrbUser::new(username.to_string(), realm.to_string());
 
 	let ticket_info = craft_ticket_info(
@@ -60,7 +65,7 @@ pub fn craft(realm: &str,
 	                                    service.clone(),
 	                                    ticket_key,
 	                                    user_rid,
-	                                    realm_sid,
+	                                    pisid,
 	                                    groups,
 	                                    ticket_key_enc.map(|e| e.as_constant()),
 	);

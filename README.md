@@ -113,6 +113,7 @@ _(View the `kerberoast` example [here](examples/kerberoast/src/main.rs))_
 > - Remove some of the allows inside of lib.rs
 > - Improve documentation significantly, including README and the examples directory
 > - Add SID lookup module and improve the functions that require them
+> - Implement proper ticket dumping via LSA for the WindowsVault
 
 ## Credits
 This work is based on great work of other people:

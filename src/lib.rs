@@ -25,7 +25,7 @@
 //!     - [**craft**](#craft)
 //!     - [**hash**](#hash)
 //!     - [**kerberoast**](#kerberoast)
-//! 3. [**TODO**](#todo)
+//! 3. [**TODO**](https://github.com/NukingDragons/cerbero-lib/tree/main?tab=readme-ov-file#TODO)
 //! 4. [**Credits**](#credits)
 //!
 //! ---
@@ -132,9 +132,11 @@ pub use crate::{
 		BruteResult, BufVault, CrackFormat, EmptyVault, EncryptionType, FileVault, KrbUser, TicketCred, TicketCreds,
 		Vault,
 	},
-	error::Result,
+	error::{Error, Result},
 };
 
 pub use kerberos_asn1::Ticket;
 pub use kerberos_crypto::Key;
-pub use ms_pac::PISID;
+
+#[cfg(target_os = "windows")]
+pub use crate::core::WindowsVault;
