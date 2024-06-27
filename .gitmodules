@@ -1,0 +1,4 @@
+[submodule "kerbeiros"]
+	path = kerbeiros
+	url = https://gitlab.com/davidmmulder/kerbeiros
+	branch = dmulder/updates
