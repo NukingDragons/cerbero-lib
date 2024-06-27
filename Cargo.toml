@@ -1,22 +1,22 @@
 [package]
 name = "cerbero-lib"
 description = "Kerberos protocol attacker library"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "AGPL-3.0"
 repository = "https://github.com/NukingDragons/cerbero-lib"
 readme = "README.md"
 
 [package.metadata.docs.rs]
-targets = [ "x86_64-pc-windows-gnu", "x86_64-pc-windows-msvc", "x86_64-apple-darwin", "x86_64-unknown-linux-gnu" ]
+targets = [ "x86_64-pc-windows-msvc", "x86_64-apple-darwin", "x86_64-unknown-linux-gnu" ]
 
 [dependencies]
-kerbeiros = "0.2"
-kerberos_asn1 = "0.2"
-kerberos_constants = "0.0"
-kerberos_crypto = "0.3"
-kerberos_ccache = "0.0"
-kerberos_keytab = "0.0"
+kerbeiros = { git = "https://gitlab.com/davidmmulder/kerbeiros", version = "0.2.2", rev = "ca1605e893ef2d7e8a7566f743504d98c0f25d70" }
+kerberos_asn1 = { git = "https://gitlab.com/davidmmulder/kerbeiros", version = "0.2.1", rev = "ca1605e893ef2d7e8a7566f743504d98c0f25d70" }
+kerberos_constants = { git = "https://gitlab.com/davidmmulder/kerbeiros", version = "0.0.9", rev = "ca1605e893ef2d7e8a7566f743504d98c0f25d70" }
+kerberos_crypto = { git = "https://gitlab.com/davidmmulder/kerbeiros", version = "0.3.6", rev = "ca1605e893ef2d7e8a7566f743504d98c0f25d70" }
+kerberos_ccache = { git = "https://gitlab.com/davidmmulder/kerbeiros", version = "0.0.7", rev = "ca1605e893ef2d7e8a7566f743504d98c0f25d70" }
+kerberos_keytab = { git = "https://gitlab.com/davidmmulder/kerbeiros", version = "0.0.2", rev = "ca1605e893ef2d7e8a7566f743504d98c0f25d70" }
 ms_pac = "0.0"
 ms_dtyp = "0.0"
 ms_samr = "0.0"
